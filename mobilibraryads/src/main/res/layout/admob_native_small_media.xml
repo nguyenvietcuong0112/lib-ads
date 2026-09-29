@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.gms.ads.nativead.NativeAdView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="156dp"
+    android:id="@+id/native_ad_view"
+    android:background="@color/bg_color_ads_2"
+    >
+
+
+    <com.facebook.shimmer.ShimmerFrameLayout
+        android:id="@+id/shimmer_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/bg_color_ads_2"
+        android:backgroundTint="@color/bg_color_ads_2"
+        app:shimmer_auto_start="true"
+        app:shimmer_base_color="@color/bg_color_ads_2"
+        app:shimmer_highlight_color="@color/bg_color_ads_2">
+
+        <include
+            layout="@layout/shimer_top_layout_recycler_native"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </com.facebook.shimmer.ShimmerFrameLayout>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/ad_content_view"
+        android:layout_width="match_parent"
+        android:layout_height="156dp"
+        android:background="@color/bg_color_ads_2"
+        android:visibility="gone"
+        >
+
+        <LinearLayout
+            android:id="@+id/data_panel"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <com.google.android.gms.ads.nativead.MediaView
+                android:id="@+id/media_view"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@color/transparent"
+                android:backgroundTint="@color/transparent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:paddingVertical="10dp"
+                android:paddingHorizontal="10dp"
+                >
+
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center_vertical"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+
+                    <androidx.cardview.widget.CardView
+                        android:visibility="gone"
+                        android:id="@+id/imvCardView"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:background="@color/transparent"
+                        android:backgroundTint="@color/transparent"
+                        app:cardCornerRadius="15dp"
+                        app:cardElevation="0dp"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent">
+
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent">
+
+                            <ImageView
+                                android:id="@+id/ad_app_icon"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="@color/transparent"
+                                android:layout_gravity="center"/>
+
+
+
+
+
+                        </RelativeLayout>
+
+
+                    </androidx.cardview.widget.CardView>
+
+
+                    <TextView
+                        android:id="@+id/ad_headline"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="marquee"
+                        android:focusable="true"
+
+                        android:gravity="center|start"
+                        android:marqueeRepeatLimit="marquee_forever"
+                        android:singleLine="true"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toEndOf="@+id/imvCardView"
+                        app:layout_constraintTop_toTopOf="@+id/imvCardView"
+                        tools:text="Ads  Headline Ads Headline Ads Headline Ads Headline" />
+                </LinearLayout>
+
+
+
+                <TextView
+                    android:id="@+id/ad_body"
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:layout_marginTop="5dp"
+                    android:ellipsize="end"
+
+                    android:gravity="top|start"
+                    android:maxLength="90"
+                    android:maxLines="2"
+                    android:textColor="#666E7D"
+                    android:textSize="12sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toEndOf="@+id/imvCardView"
+                    app:layout_constraintTop_toBottomOf="@+id/ad_headline"
+                    tools:text="TextView90TextVw90TextView90TextView90TextView90TextView90TextView90TextView90TextView90TextView90TextView90" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/ad_call_to_action"
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="3dp"
+                    android:background="@drawable/gradient_background_corner_12"
+                    android:backgroundTint="@color/bg_color_button_ads_2"
+                    android:gravity="center"
+                    android:lines="1"
+                    android:textColor="@color/bg_color_ads_2"
+                    android:textSize="14sp"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/data_panel"
+                    tools:text="Visit Site" />
+
+
+
+
+
+            </LinearLayout>
+        </LinearLayout>
+
+
+        <TextView
+            android:id="@+id/ad_notification_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="3dp"
+            android:background="@drawable/bg_stroke_4"
+
+            android:maxLines="1"
+            android:text="Ad"
+            android:textColor="@color/bg_color_ads_2"
+            android:textSize="10sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+
+
+
+
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.gms.ads.nativead.NativeAdView>

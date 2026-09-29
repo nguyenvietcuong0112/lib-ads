@@ -1,0 +1,14 @@
+*.iml
+.gradle
+/local.properties
+/.idea
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+*.apk
+output.json
+
+# Local maven build output (managed by GitHub Actions branch)
+/maven-repo

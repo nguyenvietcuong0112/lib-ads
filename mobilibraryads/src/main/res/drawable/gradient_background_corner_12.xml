@@ -1,0 +1,12 @@
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="rectangle">
+            <gradient
+                android:startColor="#6680FF"
+                android:centerColor="#8990AF"
+                android:endColor="@color/bg_color_button_ads_2"
+                android:angle="0"/>
+            <corners android:radius="12dp"/> <!-- Bo tròn các góc -->
+        </shape>
+    </item>
+</layer-list>

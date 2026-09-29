@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/bg_color_ad">
+
+    <!-- SHIMMER: Màn hình loading giả lập đồng bộ với layout thực tế -->
+    <com.facebook.shimmer.ShimmerFrameLayout
+        android:id="@+id/shimmer_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="96dp"
+        app:shimmer_auto_start="true">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="8dp">
+
+            <View
+                android:id="@+id/shimmer_media"
+                android:layout_width="120dp"
+                android:layout_height="80dp"
+                android:background="@drawable/bg_conner_8"
+                android:backgroundTint="#E0E0E0"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <View
+                android:id="@+id/shimmer_icon"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_conner_8"
+                android:backgroundTint="#E0E0E0"
+                app:layout_constraintStart_toEndOf="@+id/shimmer_media"
+                app:layout_constraintTop_toTopOf="@+id/shimmer_media" />
+
+            <View
+                android:id="@+id/shimmer_title"
+                android:layout_width="0dp"
+                android:layout_height="14dp"
+                android:layout_marginStart="8dp"
+                android:background="#E0E0E0"
+                app:layout_constraintBottom_toBottomOf="@+id/shimmer_icon"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/shimmer_icon"
+                app:layout_constraintTop_toTopOf="@+id/shimmer_icon" />
+
+            <View
+                android:id="@+id/shimmer_body"
+                android:layout_width="0dp"
+                android:layout_height="10dp"
+                android:layout_marginTop="8dp"
+                android:background="#E0E0E0"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@+id/shimmer_icon"
+                app:layout_constraintTop_toBottomOf="@+id/shimmer_icon" />
+
+            <View
+                android:id="@+id/shimmer_btn"
+                android:layout_width="0dp"
+                android:layout_height="32dp"
+                android:background="@drawable/bg_conner_12"
+                android:backgroundTint="#E0E0E0"
+                app:layout_constraintBottom_toBottomOf="@+id/shimmer_media"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@+id/shimmer_icon" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.facebook.shimmer.ShimmerFrameLayout>
+
+    <!-- NATIVE AD VIEW: Tuân thủ quy tắc Meta Bidding (Bắt buộc có MediaView) -->
+    <com.google.android.gms.ads.nativead.NativeAdView
+        android:id="@+id/native_ad_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/ad_content_view"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/bg_color_ad"
+            android:padding="8dp">
+
+            <!-- MediaView bắt buộc cho Native Ads (Meta Audience Network yêu cầu) -->
+            <!-- Thu hẹp kích thước 120x80 (Tỉ lệ 1.5:1 vừa đủ chuẩn không bị invalid) -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/mediaCardView"
+                android:layout_width="120dp"
+                android:layout_height="80dp"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="0dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <com.google.android.gms.ads.nativead.MediaView
+                    android:id="@+id/media_view"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </androidx.cardview.widget.CardView>
+
+            <!-- App Icon: Cạnh trên cùng bên phải của MediaView -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/imvCardView"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="8dp"
+                app:cardCornerRadius="4dp"
+                app:cardElevation="0dp"
+                app:layout_constraintStart_toEndOf="@+id/mediaCardView"
+                app:layout_constraintTop_toTopOf="@+id/mediaCardView">
+
+                <ImageView
+                    android:id="@+id/ad_app_icon"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop" />
+            </androidx.cardview.widget.CardView>
+
+            <!-- Nhãn AD (Bắt buộc theo chuẩn Google/Meta) -->
+            <TextView
+                android:id="@+id/ad_notification_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:background="@drawable/bg_stroke_noti_ad"
+                android:gravity="center"
+                android:paddingHorizontal="4dp"
+                android:paddingVertical="1dp"
+                android:text="@string/ad_label"
+                android:textColor="@color/tv_color_stroke_ad"
+                android:textSize="9sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="@+id/imvCardView"
+                app:layout_constraintStart_toEndOf="@+id/imvCardView"
+                app:layout_constraintTop_toTopOf="@+id/imvCardView" />
+
+            <!-- Headline Text -->
+            <TextView
+                android:id="@+id/ad_headline"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:ellipsize="end"
+                android:singleLine="true"
+                android:textColor="@color/tv_color_title_ad"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="@+id/imvCardView"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toEndOf="@+id/ad_notification_view"
+                app:layout_constraintTop_toTopOf="@+id/imvCardView"
+                tools:text="Ads Headline" />
+
+            <!-- Body Text: Rút gọn còn 1 dòng để giữ form Small -->
+            <TextView
+                android:id="@+id/ad_body"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/tv_color_content_ad"
+                android:textSize="11sp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@+id/imvCardView"
+                app:layout_constraintTop_toBottomOf="@+id/imvCardView"
+                tools:text="This is a short description of the ad." />
+
+            <!-- Button Call to Action -->
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/ad_call_to_action"
+                android:layout_width="0dp"
+                android:layout_height="32dp"
+                android:elevation="0dp"
+                android:background="@drawable/bg_gradient_conner_23"
+                android:gravity="center"
+                android:text="@string/action_visit_site"
+                android:textColor="@color/tv_color_button_ads"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="@+id/imvCardView" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </com.google.android.gms.ads.nativead.NativeAdView>
+</FrameLayout>

@@ -1,0 +1,74 @@
+name: Build and Publish Maven Artifacts
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version name (e.g. 0.0.1)'
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Grant Execute Permission for Gradlew
+        run: chmod +x gradlew
+
+      - name: Determine Version
+        id: get_version
+        run: |
+          if [ -n "${{ github.event.inputs.version }}" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == refs/tags/v* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/v}"
+            echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          elif [[ "${{ github.ref }}" == refs/tags/* ]]; then
+            VERSION="${GITHUB_REF#refs/tags/}"
+            echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          else
+            echo "version=0.0.1" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build and Publish to Local Maven Folder
+        run: ./gradlew :mobilibraryads:publishReleasePublicationToLocalMavenRepoRepository "-PlibVersion=${{ steps.get_version.outputs.version }}" --no-daemon --stacktrace
+
+      - name: Deploy to maven-repo Branch (GitHub Raw Maven Repository)
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./maven-repo
+          publish_branch: maven-repo
+          keep_files: true
+          commit_message: "Publish Maven Artifacts ${{ github.ref_name }}"
+
+      - name: Create GitHub Release and Attach AAR
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: |
+            maven-repo/com/app/library-ads/*/*.aar
+            maven-repo/com/app/library-ads/*/*.pom
+          generate_release_notes: true

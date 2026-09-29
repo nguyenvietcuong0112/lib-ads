@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">AppAdsLib</string>
+    <string name="ad_label">AD</string>
+    <string name="action_visit_site">Visit</string>
+    <string name="action_install_now">Install</string>
+
+
+
+    <string name="language_english" translatable="false">English</string>
+    <string name="language_hindi" translatable="false">हिन्दी भाषा</string>
+    <string name="language_french" translatable="false">Français</string>
+    <string name="language_filipino" translatable="false">Filipino</string>
+    <string name="language_german" translatable="false">Deutsch</string>
+    <string name="language_indonesian" translatable="false">Bahasa Indonesia</string>
+    <string name="language_portuguese" translatable="false">Português</string>
+    <string name="language_spanish" translatable="false">Español</string>
+    <string name="language_thailand" translatable="false">ภาษาไทย</string>
+    <string name="language_vietnamese" translatable="false">Tiếng Việt</string>
+</resources>

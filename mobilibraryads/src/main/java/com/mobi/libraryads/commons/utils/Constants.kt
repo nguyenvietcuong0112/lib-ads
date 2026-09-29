@@ -1,0 +1,10 @@
+package com.mobi.libraryads.commons.utils
+
+object Constants {
+
+    var FROM_SETTING = "FROM_SETTING"
+    var TARGET_CLASS_LANGUAGE = "TARGET_CLASS_LANGUAGE"
+    var NAME_AD_NATIVE_LANGUAGE = "NAME_AD_NATIVE_LANGUAGE"
+    var CAN_SHOW_NATIVE_LANGUAGE_SETTING = "CAN_SHOW_NATIVE_LANGUAGE_SETTING"
+
+}

@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="color_select_shape">#80FFFFFF</color>
+    <color name="transparent">#00000000</color>
+    <color name="white50">#50FFFFFF</color>
+    <color name="black50">#50000000</color>
+    <color name="yellow">#5D5602</color>
+    <color name="gray">#909090</color>
+    <color name="grey">#B3B3B3</color>
+    <color name="transparent_grey">#80000000</color>
+    <color name="bg_button_home">#FD3F7D</color>
+
+    <color name="blue_color_picker">#0066FF</color>
+    <color name="brown_color_picker">#AF593E</color>
+    <color name="green_color_picker">#01A368</color>
+    <color name="orange_color_picker">#FF861F</color>
+    <color name="red_color_picker">#ED0A3F</color>
+    <color name="red_orange_color_picker">#FF3F34</color>
+    <color name="sky_blue_color_picker">#76D7EA</color>
+    <color name="violet_color_picker">#8359A3</color>
+    <color name="yellow_color_picker">#FBE870</color>
+    <color name="yellow_green_color_picker">#C5E17A</color>
+    <color name="tv_color_button_ads">#FFFFFF</color>
+    <color name="bg_color_button_ads">#FF4682</color>
+    <color name="bg_main_ads">#23232D</color>
+    <color name="bg_main_ads_onboarding">#23232D</color>
+    <color name="bg_main_lib">#A651FB</color>
+    <color name="bg_color_ad">#FFFDFD</color>
+    <color name="tv_color_title_ad">#000000</color>
+    <color name="tv_color_content_ad">#2E2E2E</color>
+    <color name="tv_color_stroke_ad">#2A2A2A</color>
+    <color name="color_main_button_app">#FD3F7D</color>
+
+
+    <color name="color_no_select_bg_filter">#DCDCDC</color>
+    <color name="color_selected_bg_filter">#FFFFFF</color>
+
+
+    <color name="tv_color_no_select">#838383</color>
+    <color name="tv_color_main_button">#7E45FF</color>
+
+    <color name="color_blur_overlay">#838383</color>
+    <color name="tv_color_aspect_ratio_selected">#7E45FF</color>
+    <color name="bg_color_selected_resolution">#212121</color>
+    <color name="bg_color_all_app">#FFFFFF</color>
+
+
+    <color name="bg_color_cardview_default">#EFEFEF</color>
+    <color name="bg_color_cardview_selected">#80000000</color>
+    <color name="tab_inactive_color">#4D4D4D</color>
+</resources>

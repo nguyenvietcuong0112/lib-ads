@@ -1,0 +1,132 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
+plugins {
+    alias(libs.plugins.android.library)
+//    alias(libs.plugins.kotlin.android)
+    id("maven-publish")
+}
+
+def LIB_ARTIFACT = "library-ads"
+def LIB_VERSION = project.findProperty("libVersion") ?: "0.0.1"
+
+android {
+    namespace 'com.mobi.libraryads'
+    compileSdk 37
+
+    version = LIB_VERSION
+    defaultConfig {
+        minSdk 24
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles "consumer-rules.pro"
+        buildConfigField "String", "LIB_ARTIFACT", "\"${LIB_ARTIFACT}\""
+        buildConfigField "String", "LIB_VERSION", "\"${LIB_VERSION}\""
+    }
+    publishing {
+        singleVariant("release")
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+
+
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    kotlin {
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_17)
+        }
+    }
+
+    buildFeatures {
+        viewBinding true
+        dataBinding true // Kích hoạt tính năng Data Binding
+        buildConfig true
+    }
+}
+
+dependencies {
+
+    implementation(libs.androidx.fragment.ktx)
+    implementation(libs.androidx.core)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation(libs.androidx.activity)
+    implementation(libs.androidx.constraintlayout)
+
+
+    //lib ads
+    api(libs.play.services.ads)
+
+    //mediation
+    api(libs.admob.adapter)
+    api(libs.user.messaging.platform)
+
+    // Tracking MMP SDKs (compileOnly để app có thể chọn dùng Adjust, AppsFlyer hoặc chỉ dùng Firebase)
+    compileOnly(libs.adjust.android)
+    compileOnly(libs.adjust.android.webbridge)
+    compileOnly(libs.appsflyer.android)
+    api(libs.installreferrer)
+
+
+    // Retrofit
+    api(libs.okhttp)
+    api(libs.converter.gson)
+
+
+    api(platform(libs.firebase.bom))
+    api(libs.firebase.config)
+    api(libs.firebase.analytics)
+//    implementation (libs.firebase.crashlytics)
+    api(libs.firebase.messaging)
+
+
+    //shimmer
+    api(libs.shimmer)
+
+    api(libs.glide)
+    api(libs.lottie)
+
+
+    api libs.androidx.media3.exoplayer
+    api libs.androidx.media3.ui
+    api(libs.androidx.media3.exoplayer.dash)
+}
+
+publishing {
+    publications {
+        register("release", MavenPublication) {
+            groupId = "com.app"
+            artifactId = LIB_ARTIFACT
+            version = LIB_VERSION
+            afterEvaluate {
+                from components.release
+            }
+        }
+    }
+
+    repositories {
+        // 1. Xuất vào thư mục maven-repo cục bộ (dùng cho GitHub Raw Maven Repo / Distribution Repo)
+        maven {
+            name = "LocalMavenRepo"
+            url = uri("${rootProject.projectDir}/maven-repo")
+        }
+
+        // 2. Xuất lên GitHub Packages (phương án token)
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/" + (System.getenv("GITHUB_REPOSITORY") ?: "appstudio/ads_lib"))
+
+            credentials {
+                username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_ACTOR") ?: ""
+                password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN") ?: ""
+            }
+        }
+    }
+}
