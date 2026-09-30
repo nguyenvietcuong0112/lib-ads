@@ -1,0 +1,1106 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.app",
+    "module": "library-ads",
+    "version": "0.0.3",
+    "attributes": {
+      "org.gradle.status": "release"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "9.5.0"
+    }
+  },
+  "variants": [
+    {
+      "name": "releaseVariantReleaseApiPublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-api"
+      },
+      "dependencies": [
+        {
+          "group": "com.google.android.libraries.ads.mobile.sdk",
+          "module": "ads-mobile-sdk",
+          "version": {
+            "requires": "1.4.0"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "com.pubscale.ads",
+          "module": "admob-adapter",
+          "version": {
+            "requires": "1.0.5"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "com.google.android.ump",
+          "module": "user-messaging-platform",
+          "version": {
+            "requires": "4.0.0"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "com.android.installreferrer",
+          "module": "installreferrer",
+          "version": {
+            "requires": "2.2"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "com.squareup.okhttp3",
+          "module": "okhttp",
+          "version": {
+            "requires": "5.5.0"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "com.squareup.retrofit2",
+          "module": "converter-gson",
+          "version": {
+            "requires": "3.0.0"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "com.google.firebase",
+          "module": "firebase-bom",
+          "version": {
+            "requires": "34.19.0"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ],
+          "attributes": {
+            "org.gradle.category": "platform"
+          }
+        },
+        {
+          "group": "com.google.firebase",
+          "module": "firebase-config",
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "com.google.firebase",
+          "module": "firebase-analytics",
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "com.google.firebase",
+          "module": "firebase-messaging",
+          "version": {
+            "requires": "25.1.3"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "com.facebook.shimmer",
+          "module": "shimmer",
+          "version": {
+            "requires": "0.5.0"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "com.github.bumptech.glide",
+          "module": "glide",
+          "version": {
+            "requires": "5.0.9"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "com.airbnb.android",
+          "module": "lottie",
+          "version": {
+            "requires": "6.7.1"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "androidx.media3",
+          "module": "media3-exoplayer",
+          "version": {
+            "requires": "1.11.1"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "androidx.media3",
+          "module": "media3-ui",
+          "version": {
+            "requires": "1.11.1"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "androidx.media3",
+          "module": "media3-exoplayer-dash",
+          "version": {
+            "requires": "1.11.1"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.3.21"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "androidx.databinding",
+          "module": "viewbinding",
+          "version": {
+            "requires": "9.3.1"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "androidx.databinding",
+          "module": "databinding-common",
+          "version": {
+            "requires": "9.3.1"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "androidx.databinding",
+          "module": "databinding-runtime",
+          "version": {
+            "requires": "9.3.1"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "androidx.databinding",
+          "module": "databinding-adapters",
+          "version": {
+            "requires": "9.3.1"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "androidx.databinding",
+          "module": "databinding-ktx",
+          "version": {
+            "requires": "9.3.1"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        }
+      ],
+      "files": [
+        {
+          "name": "library-ads-0.0.3.aar",
+          "url": "library-ads-0.0.3.aar",
+          "size": 635677,
+          "sha512": "d3c5e18e69a055747ea3a854499f03a40ecb12bd786e2f2a1ae45304a959a6ae6de24b1fe0516971df8195182c0b71f9d9088e359c949436528611ef20c98619",
+          "sha256": "a443f3a031ecec780e65ca91b883f4efb973affda304bebcac2d7433eee22145",
+          "sha1": "4696b7ddf1bd5840fce992972738c5fa28d2c5dc",
+          "md5": "b46542dcefc92057577626271d7c58c3"
+        }
+      ]
+    },
+    {
+      "name": "releaseVariantReleaseRuntimePublication",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.libraryelements": "aar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "androidx.fragment",
+          "module": "fragment-ktx",
+          "version": {
+            "requires": "1.9.0"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "androidx.core",
+          "module": "core",
+          "version": {
+            "requires": "1.19.0"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "androidx.appcompat",
+          "module": "appcompat",
+          "version": {
+            "requires": "1.8.0"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "com.google.android.material",
+          "module": "material",
+          "version": {
+            "requires": "1.14.0"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "androidx.activity",
+          "module": "activity",
+          "version": {
+            "requires": "1.13.0"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "androidx.constraintlayout",
+          "module": "constraintlayout",
+          "version": {
+            "requires": "2.2.2"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "com.google.android.libraries.ads.mobile.sdk",
+          "module": "ads-mobile-sdk",
+          "version": {
+            "requires": "1.4.0"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "com.pubscale.ads",
+          "module": "admob-adapter",
+          "version": {
+            "requires": "1.0.5"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "com.google.android.ump",
+          "module": "user-messaging-platform",
+          "version": {
+            "requires": "4.0.0"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "com.android.installreferrer",
+          "module": "installreferrer",
+          "version": {
+            "requires": "2.2"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "com.squareup.okhttp3",
+          "module": "okhttp",
+          "version": {
+            "requires": "5.5.0"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "com.squareup.retrofit2",
+          "module": "converter-gson",
+          "version": {
+            "requires": "3.0.0"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "com.google.firebase",
+          "module": "firebase-bom",
+          "version": {
+            "requires": "34.19.0"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ],
+          "attributes": {
+            "org.gradle.category": "platform"
+          }
+        },
+        {
+          "group": "com.google.firebase",
+          "module": "firebase-config",
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "com.google.firebase",
+          "module": "firebase-analytics",
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "com.google.firebase",
+          "module": "firebase-messaging",
+          "version": {
+            "requires": "25.1.3"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "com.facebook.shimmer",
+          "module": "shimmer",
+          "version": {
+            "requires": "0.5.0"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "com.github.bumptech.glide",
+          "module": "glide",
+          "version": {
+            "requires": "5.0.9"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "com.airbnb.android",
+          "module": "lottie",
+          "version": {
+            "requires": "6.7.1"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "androidx.media3",
+          "module": "media3-exoplayer",
+          "version": {
+            "requires": "1.11.1"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "androidx.media3",
+          "module": "media3-ui",
+          "version": {
+            "requires": "1.11.1"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "androidx.media3",
+          "module": "media3-exoplayer-dash",
+          "version": {
+            "requires": "1.11.1"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "org.jetbrains.kotlin",
+          "module": "kotlin-stdlib",
+          "version": {
+            "requires": "2.3.21"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "androidx.databinding",
+          "module": "viewbinding",
+          "version": {
+            "requires": "9.3.1"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "androidx.databinding",
+          "module": "databinding-common",
+          "version": {
+            "requires": "9.3.1"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "androidx.databinding",
+          "module": "databinding-runtime",
+          "version": {
+            "requires": "9.3.1"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "androidx.databinding",
+          "module": "databinding-adapters",
+          "version": {
+            "requires": "9.3.1"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        },
+        {
+          "group": "androidx.databinding",
+          "module": "databinding-ktx",
+          "version": {
+            "requires": "9.3.1"
+          },
+          "excludes": [
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-lite"
+            },
+            {
+              "group": "com.google.android.gms",
+              "module": "play-services-ads-base"
+            }
+          ]
+        }
+      ],
+      "files": [
+        {
+          "name": "library-ads-0.0.3.aar",
+          "url": "library-ads-0.0.3.aar",
+          "size": 635677,
+          "sha512": "d3c5e18e69a055747ea3a854499f03a40ecb12bd786e2f2a1ae45304a959a6ae6de24b1fe0516971df8195182c0b71f9d9088e359c949436528611ef20c98619",
+          "sha256": "a443f3a031ecec780e65ca91b883f4efb973affda304bebcac2d7433eee22145",
+          "sha1": "4696b7ddf1bd5840fce992972738c5fa28d2c5dc",
+          "md5": "b46542dcefc92057577626271d7c58c3"
+        }
+      ]
+    }
+  ]
+}
