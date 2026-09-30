@@ -1,4 +1,4 @@
 jdk:
   - openjdk17
 install:
-  - ./gradlew :mobilibraryads:publishReleasePublicationToMavenLocal -PlibVersion=${GIT_TAG:-0.0.2}
+  - ./gradlew :mobilibraryads:publishReleasePublicationToMavenLocal -PlibVersion=${GIT_TAG:-0.0.3}

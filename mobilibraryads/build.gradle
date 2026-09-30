@@ -7,7 +7,7 @@ plugins {
 }
 
 def LIB_ARTIFACT = "library-ads"
-def LIB_VERSION = project.findProperty("libVersion") ?: "0.0.2"
+def LIB_VERSION = project.findProperty("libVersion") ?: "0.0.3"
 
 android {
     namespace 'com.mobi.libraryads'
