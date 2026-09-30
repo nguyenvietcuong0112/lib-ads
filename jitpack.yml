@@ -1,0 +1,7 @@
+jdk:
+  - openjdk17
+before_install:
+  - yes | sdkmanager --licenses || true
+install:
+  - FILE="-Dfile.encoding=UTF-8"
+  - ./gradlew :mobilibraryads:publishReleasePublicationToMavenLocal -PlibVersion=${GIT_TAG:-0.0.2}
