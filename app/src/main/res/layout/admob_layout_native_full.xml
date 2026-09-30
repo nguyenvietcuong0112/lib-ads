@@ -16,7 +16,7 @@
     </com.facebook.shimmer.ShimmerFrameLayout>
 
     <!-- NATIVE AD VIEW: Hiện khi Load hoàn tất. (Mặc định GONE) -->
-    <com.google.android.gms.ads.nativead.NativeAdView
+    <com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView
         android:id="@+id/native_ad_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -30,7 +30,7 @@
             android:padding="0dp">
 
             <!-- MEDIA VIEW: Kích thước Full chiếm toàn bộ khoảng trống phía trên -->
-            <com.google.android.gms.ads.nativead.MediaView
+            <com.google.android.libraries.ads.mobile.sdk.nativead.MediaView
                 android:id="@+id/media_view"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -133,5 +133,5 @@
                     app:layout_constraintStart_toStartOf="parent" />
             </androidx.constraintlayout.widget.ConstraintLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
-    </com.google.android.gms.ads.nativead.NativeAdView>
+    </com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView>
 </FrameLayout>

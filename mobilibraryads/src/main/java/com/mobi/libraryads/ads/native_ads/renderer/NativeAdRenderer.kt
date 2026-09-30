@@ -9,8 +9,8 @@ import com.mobi.libraryads.ads.utils.ShimmerHelper
 import com.mobi.libraryads.commons.utils.AdsLog
 import com.mobi.libraryads.commons.utils.setGone
 import com.mobi.libraryads.commons.utils.setVisible
-import com.google.android.gms.ads.nativead.NativeAd
-import com.google.android.gms.ads.nativead.NativeAdView
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView
 
 class NativeAdRenderer(
     private val viewBinders: List<INativeViewBinder>

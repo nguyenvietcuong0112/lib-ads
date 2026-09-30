@@ -3,8 +3,8 @@ package com.mobi.libraryads.ads.utils
 import android.view.View
 import android.view.ViewGroup
 import com.facebook.shimmer.ShimmerFrameLayout
-import com.google.android.gms.ads.AdView
-import com.google.android.gms.ads.nativead.NativeAdView
+import com.google.android.libraries.ads.mobile.sdk.banner.AdView
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView
 import com.mobi.libraryads.R
 import com.mobi.libraryads.commons.utils.setGone
 import com.mobi.libraryads.commons.utils.setVisible

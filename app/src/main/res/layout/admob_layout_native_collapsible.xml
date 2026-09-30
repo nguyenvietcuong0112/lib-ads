@@ -18,7 +18,7 @@
     </com.facebook.shimmer.ShimmerFrameLayout>
 
     <!-- NATIVE AD VIEW: Hiển thị khi Load xong -->
-    <com.google.android.gms.ads.nativead.NativeAdView
+    <com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView
         android:id="@+id/native_ad_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -32,7 +32,7 @@
             android:paddingBottom="12dp">
 
             <!-- BAT BUOC CHO META: MediaView phải VISIBLE, ko lồng sâu -->
-            <com.google.android.gms.ads.nativead.MediaView
+            <com.google.android.libraries.ads.mobile.sdk.nativead.MediaView
                 android:id="@+id/media_view"
                 android:layout_width="match_parent"
                 android:layout_height="130dp"
@@ -140,7 +140,7 @@
                 app:layout_constraintTop_toBottomOf="@+id/data_panel" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
-    </com.google.android.gms.ads.nativead.NativeAdView>
+    </com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView>
 
     <!-- Nút đóng/mở Collapse -->
     <ImageView

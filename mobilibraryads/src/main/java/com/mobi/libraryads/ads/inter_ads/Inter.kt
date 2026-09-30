@@ -9,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
-import com.adjust.sdk.sig.c
 import com.mobi.libraryads.AdsApplication
 import com.mobi.libraryads.AdsCoroutineScope
 import com.mobi.libraryads.FOConfigs
@@ -28,12 +27,13 @@ import com.mobi.libraryads.commons.utils.AdsLog
 import com.mobi.libraryads.commons.utils.isInternetConnected
 import com.mobi.libraryads.views.base.BaseActivity.Companion.inForceUpdate
 import com.mobi.libraryads.views.dialogs.DialogLoadingAds
-import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.FullScreenContentCallback
-import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.interstitial.InterstitialAd
-import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
+import com.google.android.libraries.ads.mobile.sdk.common.AdLoadCallback
+import com.google.android.libraries.ads.mobile.sdk.common.AdRequest
+import com.google.android.libraries.ads.mobile.sdk.common.AdValue
+import com.google.android.libraries.ads.mobile.sdk.common.FullScreenContentError
+import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError
+import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAd
+import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAdEventCallback
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.filterNotNull
@@ -45,7 +45,19 @@ import kotlin.time.Duration.Companion.milliseconds
 
 object Inter {
 
+    private const val TAG = "Inter "
+    private var lastShowAdFull = 0L
     private var mInterAds = ConcurrentHashMap<String, InterAdModel>()
+    private var mInterAOA: InterstitialAd? = null
+
+    private fun postOnMain(action: () -> Unit) {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            action()
+        } else {
+            Handler(Looper.getMainLooper()).post(action)
+        }
+    }
+
     fun showInter(
         activity: Activity,
         adName: String,
@@ -62,7 +74,7 @@ object Inter {
                     override fun onStateChanged(source: LifecycleOwner, event: Lifecycle.Event) {
                         if (event == Lifecycle.Event.ON_RESUME) {
                             lifecycle.removeObserver(this)
-                            showInter(activity, adName, nextAction, onShown, preload, canShowAd)
+                            showInter(activity, adName, nextAction, onShown, preload, canShowAd, checkCappingTime)
                         } else if (event == Lifecycle.Event.ON_DESTROY) {
                             lifecycle.removeObserver(this)
                         }
@@ -77,7 +89,9 @@ object Inter {
         fun runNext(onDismiss: Boolean = false) {
             if (handled) return
             handled = true
-            nextAction.invoke(onDismiss)
+            postOnMain {
+                nextAction.invoke(onDismiss)
+            }
         }
 
         if (SPF(activity).is_app_pro || !canShowAd) {
@@ -96,13 +110,10 @@ object Inter {
         )
         if (checkCappingTime(checkCappingTime)) {
 
-            trackingRevenueAd(interAd)
-
-            interAd.fullScreenContentCallback = object : FullScreenContentCallback() {
+            interAd.adEventCallback = object : InterstitialAdEventCallback {
                 override fun onAdDismissedFullScreenContent() {
-                    super.onAdDismissedFullScreenContent()
                     lastShowAdFull = System.currentTimeMillis()
-                    interAd.fullScreenContentCallback = null
+                    interAd.adEventCallback = null
 
                     adModel.interAd = null
                     if (preload) preLoadInter(activity, adModel, canShowAd)
@@ -111,8 +122,9 @@ object Inter {
                 }
 
                 override fun onAdShowedFullScreenContent() {
-                    super.onAdShowedFullScreenContent()
-                    onShown?.invoke()
+                    postOnMain {
+                        onShown?.invoke()
+                    }
                     inters_ad_view.postFirebaseEvent()
                     AdsLog.d(
                         TAG,
@@ -121,18 +133,22 @@ object Inter {
                     StatusShowAd.isInterstitialShown = true
                 }
 
-                override fun onAdFailedToShowFullScreenContent(p0: AdError) {
-                    super.onAdFailedToShowFullScreenContent(p0)
-                    interAd.fullScreenContentCallback = null
+                override fun onAdFailedToShowFullScreenContent(fullScreenContentError: FullScreenContentError) {
+                    interAd.adEventCallback = null
                     AdsLog.d(
                         TAG,
-                        "showInter: onAdFailedToShowFullScreenContent = $adName "
+                        "showInter: onAdFailedToShowFullScreenContent = $adName (${fullScreenContentError.message})"
                     )
                     adModel.interAd = null
                     runNext()
                     StatusShowAd.isInterstitialShown = false
                 }
+
+                override fun onAdPaid(value: AdValue) {
+                    trackingRevenueAd(interAd, value)
+                }
             }
+
             if (!activity.isFinishing
                 && !activity.isDestroyed
                 && !StatusShowAd.isInterstitialShown
@@ -142,11 +158,11 @@ object Inter {
                     interAd.show(activity)
                 } catch (_: Exception) {
                     StatusShowAd.isInterstitialShown = false
-                    interAd.fullScreenContentCallback = null
+                    interAd.adEventCallback = null
                     runNext()
                 }
             } else {
-                interAd.fullScreenContentCallback = null
+                interAd.adEventCallback = null
                 runNext()
             }
 
@@ -264,8 +280,10 @@ object Inter {
 
         var loadingDialog: DialogLoadingAds? = null
         fun dismissLoading() {
-            DialogLoadingAds.dismissLoading(loadingDialog, activity)
-            loadingDialog = null
+            postOnMain {
+                DialogLoadingAds.dismissLoading(loadingDialog, activity)
+                loadingDialog = null
+            }
         }
 
         var handled = false
@@ -274,7 +292,9 @@ object Inter {
             if (handled) return
             handled = true
             dismissLoading()
-            nextAction.invoke(onDismiss)
+            postOnMain {
+                nextAction.invoke(onDismiss)
+            }
         }
 
         if (SPF(activity).is_app_pro
@@ -283,38 +303,40 @@ object Inter {
             || (!ValueRemoteConfigModule.inter_splash_high
                     && !ValueRemoteConfigModule.inter_splash)
         ) {
-            onShowFail?.invoke()
+            postOnMain { onShowFail?.invoke() }
             runNext()
             return
         }
 
-        mInterAOA?.let {
-            trackingRevenueAd(it)
+        val currentInterAOA = mInterAOA ?: run {
+            postOnMain { onShowFail?.invoke() }
+            runNext()
+            return
         }
+
         val isType =
-            if (mInterAOA?.adUnitId == FOConfigs.splashConfig.adsSplashConfig.interHighId
-                || mInterAOA?.adUnitId == FOConfigs.splashConfig.adsSplashConfig.interHighIdS2
+            if (currentInterAOA.adUnitId == FOConfigs.splashConfig.adsSplashConfig.interHighId
+                || currentInterAOA.adUnitId == FOConfigs.splashConfig.adsSplashConfig.interHighIdS2
             ) {
                 "interHigh"
             } else {
                 "interAll"
             }
-        AdsLog.d(TAG, "showInterAOA: call show function $isType id = ${mInterAOA?.adUnitId}")
+        AdsLog.d(TAG, "showInterAOA: call show function $isType id = ${currentInterAOA.adUnitId}")
 
-
-        mInterAOA?.fullScreenContentCallback = object : FullScreenContentCallback() {
+        currentInterAOA.adEventCallback = object : InterstitialAdEventCallback {
             override fun onAdDismissedFullScreenContent() {
-                super.onAdDismissedFullScreenContent()
                 lastShowAdFull = System.currentTimeMillis()
-                mInterAOA?.fullScreenContentCallback = null
+                currentInterAOA.adEventCallback = null
                 mInterAOA = null
                 runNext(true)
                 StatusShowAd.isInterstitialShown = false
             }
 
             override fun onAdShowedFullScreenContent() {
-                super.onAdShowedFullScreenContent()
-                onShown?.invoke()
+                postOnMain {
+                    onShown?.invoke()
+                }
                 Handler(Looper.getMainLooper()).postDelayed({
                     dismissLoading()
                 }, 500)
@@ -328,14 +350,17 @@ object Inter {
                 StatusShowAd.isInterstitialShown = true
             }
 
-            override fun onAdFailedToShowFullScreenContent(p0: AdError) {
-                super.onAdFailedToShowFullScreenContent(p0)
-                mInterAOA?.fullScreenContentCallback = null
-                AdsLog.d(TAG, "showInterAOA: onAdFailedToShowFullScreenContent $isType ")
+            override fun onAdFailedToShowFullScreenContent(fullScreenContentError: FullScreenContentError) {
+                currentInterAOA.adEventCallback = null
+                AdsLog.d(TAG, "showInterAOA: onAdFailedToShowFullScreenContent $isType (${fullScreenContentError.message})")
                 mInterAOA = null
-                onShowFail?.invoke()
+                postOnMain { onShowFail?.invoke() }
                 runNext()
                 StatusShowAd.isInterstitialShown = false
+            }
+
+            override fun onAdPaid(value: AdValue) {
+                trackingRevenueAd(currentInterAOA, value)
             }
         }
 
@@ -350,19 +375,19 @@ object Inter {
                     && !activity.isDestroyed
                     && !StatusShowAd.isInterstitialShown
                 ) {
-                    mInterAOA?.show(activity)
+                    currentInterAOA.show(activity)
                     StatusShowAd.isInterstitialShown = true
                 } else {
                     StatusShowAd.isInterstitialShown = false
-                    mInterAOA?.fullScreenContentCallback = null
+                    currentInterAOA.adEventCallback = null
                     onShowFail?.invoke()
                     runNext()
                 }
             }, delayShowLoading)
-            AdsLog.d(TAG, "showInterAOA: show $isType id = ${mInterAOA?.adUnitId}")
+            AdsLog.d(TAG, "showInterAOA: show $isType id = ${currentInterAOA.adUnitId}")
         } catch (_: Exception) {
             StatusShowAd.isInterstitialShown = false
-            mInterAOA?.fullScreenContentCallback = null
+            currentInterAOA.adEventCallback = null
             onShowFail?.invoke()
             runNext()
         }
@@ -388,10 +413,10 @@ object Inter {
             "preLoadInter: activity $activity -- loading adModel = ${adModel.name} ${adModel.id}"
         )
         currentModel.isLoading = true
-        val adRequest = AdRequest.Builder().build()
+        val adRequest = AdRequest.Builder(currentModel.id).build()
         InterstitialAd.load(
-            activity.applicationContext, currentModel.id, adRequest,
-            object : InterstitialAdLoadCallback() {
+            adRequest,
+            object : AdLoadCallback<InterstitialAd> {
                 override fun onAdLoaded(interstitialAd: InterstitialAd) {
                     interstitialAd.setImmersiveMode(true)
                     currentModel.interAd = interstitialAd
@@ -406,17 +431,11 @@ object Inter {
                     currentModel.isLoading = false
                     AdsLog.d(
                         TAG,
-                        "preLoadInter: onAdFailedToLoad $activity -- adModel = ${adModel.name}"
+                        "preLoadInter: onAdFailedToLoad $activity -- adModel = ${adModel.name} (${loadAdError.message})"
                     )
                 }
             })
     }
-
-
-    private val TAG = "Inter "
-    private var lastShowAdFull = 0L
-
-    private var mInterAOA: InterstitialAd? = null
 
     fun loadAndShowInterSplash(
         activity: Activity,
@@ -439,16 +458,20 @@ object Inter {
             if (finished) return
             finished = true
             mainHandler.removeCallbacksAndMessages(null)
-            nextAction.invoke(onDismiss)
+            postOnMain {
+                nextAction.invoke(onDismiss)
+            }
         }
 
         val onAdShownCallback: () -> Unit = {
             mainHandler.removeCallbacksAndMessages(null)
-            onShown?.invoke()
+            postOnMain {
+                onShown?.invoke()
+            }
         }
 
         if (SPF(activity).is_app_pro) {
-            onLoadFailed?.invoke()
+            postOnMain { onLoadFailed?.invoke() }
             mainHandler.postDelayed({
                 complete()
             }, 2000)
@@ -456,7 +479,7 @@ object Inter {
         }
 
         if (!canShowHigh && !canShowAll) {
-            onLoadFailed?.invoke()
+            postOnMain { onLoadFailed?.invoke() }
             mainHandler.postDelayed({
                 complete()
             }, 3000L)
@@ -489,7 +512,7 @@ object Inter {
                     }
                 )
             } else {
-                onLoadFailed?.invoke()
+                postOnMain { onLoadFailed?.invoke() }
                 delay(3000.milliseconds)
                 complete()
             }
@@ -499,16 +522,14 @@ object Inter {
             AdsLog.d(TAG, "loadAndShowInterSplashSequential")
             fun loadSingleAd(adType: String, result: ((success: Boolean) -> Unit)? = null) {
                 val adId = if (adType == "high") idHigh else idAllPrice
-                val adRequest = AdRequest.Builder().build()
+                val adRequest = AdRequest.Builder(adId).build()
                 InterstitialAd.load(
-                    activity.applicationContext,
-                    adId,
                     adRequest,
-                    object : InterstitialAdLoadCallback() {
+                    object : AdLoadCallback<InterstitialAd> {
                         override fun onAdLoaded(ad: InterstitialAd) {
 
                             AdsLog.d(TAG, "loadAndShowInterSplashSequential onAdLoaded $adType")
-                            result?.invoke(true)
+                            postOnMain { result?.invoke(true) }
                             ad.setImmersiveMode(true)
                             mInterAOA = ad
 
@@ -526,13 +547,13 @@ object Inter {
                         override fun onAdFailedToLoad(error: LoadAdError) {
                             AdsLog.d(
                                 TAG,
-                                "loadAndShowInterSplashSequential onAdFailedToLoad $adType"
+                                "loadAndShowInterSplashSequential onAdFailedToLoad $adType (${error.message})"
                             )
-                            result?.invoke(false)
+                            postOnMain { result?.invoke(false) }
                             if (adType != "high") {
                                 if (!overTime) {
                                     mInterAOA = null
-                                    onLoadFailed?.invoke()
+                                    postOnMain { onLoadFailed?.invoke() }
                                     mainHandler.postDelayed({
                                         complete()
                                     }, 3000)
@@ -594,20 +615,20 @@ object Inter {
     ) {
 
         AdsLog.d(TAG, "preLoadInterAOAHigh")
-        val adRequest = AdRequest.Builder().build()
+        val adRequest = AdRequest.Builder(id).build()
         InterstitialAd.load(
-            activity.applicationContext, id, adRequest,
-            object : InterstitialAdLoadCallback() {
+            adRequest,
+            object : AdLoadCallback<InterstitialAd> {
                 override fun onAdLoaded(interstitialAd: InterstitialAd) {
                     AdsLog.d(TAG, "preLoadInterAOAHigh onAdLoaded")
                     interstitialAd.setImmersiveMode(true)
                     mInterAOA = interstitialAd
-                    result.invoke(true)
+                    postOnMain { result.invoke(true) }
                 }
 
                 override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                    Log.d(TAG, "preImpAOAHigh onAdFailedToLoad")
-                    result.invoke(false)
+                    Log.d(TAG, "preImpAOAHigh onAdFailedToLoad (${loadAdError.message})")
+                    postOnMain { result.invoke(false) }
                 }
             })
     }
@@ -616,20 +637,20 @@ object Inter {
 
         AdsLog.d(TAG, "preLoadInterAOAAllPrice")
 
-        val adRequest = AdRequest.Builder().build()
+        val adRequest = AdRequest.Builder(id).build()
         InterstitialAd.load(
-            activity.applicationContext, id, adRequest,
-            object : InterstitialAdLoadCallback() {
+            adRequest,
+            object : AdLoadCallback<InterstitialAd> {
                 override fun onAdLoaded(interstitialAd: InterstitialAd) {
                     AdsLog.d(TAG, "preLoadInterAOAAllPrice onAdLoaded")
                     interstitialAd.setImmersiveMode(true)
                     if (mInterAOA == null) mInterAOA = interstitialAd
-                    result.invoke()
+                    postOnMain { result.invoke() }
                 }
 
                 override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                    AdsLog.d(TAG, "preLoadInterAOAAllPrice onAdFailedToLoad")
-                    result.invoke()
+                    AdsLog.d(TAG, "preLoadInterAOAAllPrice onAdFailedToLoad (${loadAdError.message})")
+                    postOnMain { result.invoke() }
                 }
             })
     }
@@ -660,8 +681,10 @@ object Inter {
         val mainHandler = Handler(Looper.getMainLooper())
 
         fun dismissLoading() {
-            DialogLoadingAds.dismissLoading(loadingDialog, activity)
-            loadingDialog = null
+            postOnMain {
+                DialogLoadingAds.dismissLoading(loadingDialog, activity)
+                loadingDialog = null
+            }
         }
 
         fun complete(onDismiss: Boolean = false) {
@@ -669,7 +692,9 @@ object Inter {
             finished = true
             dismissLoading()
             mainHandler.removeCallbacksAndMessages(null)
-            nextAction.invoke(onDismiss)
+            postOnMain {
+                nextAction.invoke(onDismiss)
+            }
         }
 
         if (SPF(activity).is_app_pro || !activity.isInternetConnected() || !canShowId) {
@@ -699,33 +724,34 @@ object Inter {
                 }
             }
 
-            ad.fullScreenContentCallback = object : FullScreenContentCallback() {
+            ad.adEventCallback = object : InterstitialAdEventCallback {
                 override fun onAdDismissedFullScreenContent() {
-                    super.onAdDismissedFullScreenContent()
                     lastShowAdFull = System.currentTimeMillis()
-                    ad.fullScreenContentCallback = null
+                    ad.adEventCallback = null
                     complete(true)
                     StatusShowAd.isInterstitialShown = false
                 }
 
                 override fun onAdShowedFullScreenContent() {
-                    super.onAdShowedFullScreenContent()
                     mainHandler.removeCallbacksAndMessages(null)
-                    onShown?.invoke()
+                    postOnMain {
+                        onShown?.invoke()
+                    }
                     inters_ad_view.postFirebaseEvent()
                     StatusShowAd.isInterstitialShown = true
                 }
 
-                override fun onAdFailedToShowFullScreenContent(p0: AdError) {
-                    super.onAdFailedToShowFullScreenContent(p0)
-                    ad.fullScreenContentCallback = null
-                    onLoadFailed?.invoke()
+                override fun onAdFailedToShowFullScreenContent(fullScreenContentError: FullScreenContentError) {
+                    ad.adEventCallback = null
+                    postOnMain { onLoadFailed?.invoke() }
                     complete()
                     StatusShowAd.isInterstitialShown = false
                 }
-            }
 
-            trackingRevenueAd(ad)
+                override fun onAdPaid(value: AdValue) {
+                    trackingRevenueAd(ad, value)
+                }
+            }
 
             if (!activity.isFinishing && !activity.isDestroyed && !StatusShowAd.isInterstitialShown) {
                 try {
@@ -733,13 +759,13 @@ object Inter {
                     ad.show(activity)
                 } catch (_: Exception) {
                     StatusShowAd.isInterstitialShown = false
-                    ad.fullScreenContentCallback = null
-                    onLoadFailed?.invoke()
+                    ad.adEventCallback = null
+                    postOnMain { onLoadFailed?.invoke() }
                     complete()
                 }
             } else {
-                ad.fullScreenContentCallback = null
-                onLoadFailed?.invoke()
+                ad.adEventCallback = null
+                postOnMain { onLoadFailed?.invoke() }
                 complete()
             }
         }
@@ -770,12 +796,10 @@ object Inter {
                 }
             }, timeDelay)
 
-            val adRequest = AdRequest.Builder().build()
+            val adRequest = AdRequest.Builder(adId).build()
             InterstitialAd.load(
-                activity.applicationContext,
-                adId,
                 adRequest,
-                object : InterstitialAdLoadCallback() {
+                object : AdLoadCallback<InterstitialAd> {
                     override fun onAdLoaded(ad: InterstitialAd) {
                         ad.setImmersiveMode(true)
                         loadedAd = ad
@@ -787,7 +811,7 @@ object Inter {
 
                     override fun onAdFailedToLoad(error: LoadAdError) {
                         if (isTimeout) return
-                        onLoadFailed?.invoke()
+                        postOnMain { onLoadFailed?.invoke() }
                         complete()
                     }
                 }

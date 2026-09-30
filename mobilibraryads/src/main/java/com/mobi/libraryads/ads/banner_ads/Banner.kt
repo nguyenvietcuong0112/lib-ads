@@ -22,13 +22,16 @@ import com.mobi.libraryads.commons.utils.dpToPx
 import com.mobi.libraryads.commons.utils.isInternetConnected
 import com.mobi.libraryads.commons.utils.setGone
 import com.mobi.libraryads.commons.utils.setVisible
-import com.google.ads.mediation.admob.AdMobAdapter
-import com.google.android.gms.ads.AdListener
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.AdSize
-import com.google.android.gms.ads.AdView
-import com.google.android.gms.ads.LoadAdError
 import com.mobi.libraryads.ads.utils.ShimmerHelper
+import com.google.android.libraries.ads.mobile.sdk.banner.AdSize
+import com.google.android.libraries.ads.mobile.sdk.banner.AdView
+import com.google.android.libraries.ads.mobile.sdk.banner.BannerAd
+import com.google.android.libraries.ads.mobile.sdk.banner.BannerAdEventCallback
+import com.google.android.libraries.ads.mobile.sdk.banner.BannerAdRequest
+import com.google.android.libraries.ads.mobile.sdk.common.AdLoadCallback
+import com.google.android.libraries.ads.mobile.sdk.common.AdValue
+import com.google.android.libraries.ads.mobile.sdk.common.FullScreenContentError
+import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError
 import kotlin.math.pow
 
 object Banner {
@@ -38,8 +41,6 @@ object Banner {
     private val handler = Handler(Looper.getMainLooper())
     private var retryRunnable: Runnable? = null
     private var retryAttempt = 0
-
-    private val emptyAdListener = object : AdListener() {}
 
     enum class TypeAds {
         BANNER_NORMAL,
@@ -160,8 +161,12 @@ object Banner {
 
         // Khởi tạo AdView mới
         val adView = AdView(activity).apply {
-            adUnitId = id
-            setAdSize(adSize)
+            layoutParams = FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT,
+                android.view.Gravity.CENTER
+            )
+            setBackgroundColor(android.graphics.Color.TRANSPARENT)
             setGone() // Ẩn đi lúc đầu, chỉ hiện khi đã tải xong
         }
         mAdView = adView
@@ -171,8 +176,9 @@ object Banner {
             "requestBanner: Khởi tạo AdView mới và thêm vào adFrame (trạng thái ẩn ban đầu)."
         )
 
-        // Cấu hình AdRequest
-        val adRequest: AdRequest = when (typeAds) {
+        // Cấu hình BannerAdRequest
+        val requestBuilder = BannerAdRequest.Builder(id, adSize)
+        when (typeAds) {
             TypeAds.BANNER_COLLAPSIBLE_BOTTOM, TypeAds.BANNER_COLLAPSIBLE_TOP -> {
                 val collapsibleValue =
                     if (typeAds == TypeAds.BANNER_COLLAPSIBLE_BOTTOM) "bottom" else "top"
@@ -183,128 +189,132 @@ object Banner {
                 val extras = Bundle().apply {
                     putString("collapsible", collapsibleValue)
                 }
-                AdRequest.Builder()
-                    .addNetworkExtrasBundle(AdMobAdapter::class.java, extras)
-                    .build()
+                requestBuilder.setGoogleExtrasBundle(extras)
             }
 
             else -> {
                 AdsLog.d(TAG, "requestBanner: Cấu hình quảng cáo Banner thường.")
-                AdRequest.Builder().build()
             }
         }
+        val bannerAdRequest = requestBuilder.build()
 
-        // Thiết lập theo dõi doanh thu (Adjust Revenue Tracking)
-        AdsLog.d(TAG, "requestBanner: Đăng ký PaidEventListener để theo dõi doanh thu quảng cáo.")
-        trackingRevenueAd(adView)
-
-        // Thiết lập AdListener lắng nghe sự kiện
-        adView.adListener = object : AdListener() {
-
-            override fun onAdLoaded() {
-                super.onAdLoaded()
-                AdsLog.i(TAG, "AdListener: onAdLoaded - Quảng cáo đã được tải thành công.")
+        // Tải quảng cáo bằng AdLoadCallback<BannerAd> theo GMA Next-Gen SDK
+        val adLoadCallback = object : AdLoadCallback<BannerAd> {
+            override fun onAdLoaded(ad: BannerAd) {
+                AdsLog.i(TAG, "Banner: onAdLoaded - Quảng cáo đã được tải thành công.")
                 retryAttempt = 0
 
-                if (activity.isFinishing || activity.isDestroyed) {
+                if (activity.isFinishing || activity.isDestroyed || mAdView !== adView) {
                     AdsLog.w(
                         TAG,
-                        "AdListener: onAdLoaded - Activity đã kết thúc hoặc bị hủy khi đang chờ tải. Bỏ qua cập nhật UI."
+                        "Banner: onAdLoaded - Activity đã kết thúc hoặc banner đã bị hủy. Bỏ qua cập nhật UI."
                     )
                     return
                 }
 
-                // Ẩn shimmer và hiển thị AdView
-                ShimmerHelper.hideShimmer(adFrame)
+                // Đăng ký BannerAdEventCallback
+                ad.adEventCallback = object : BannerAdEventCallback {
+                    override fun onAdImpression() {
+                        AdsLog.i(TAG, "Banner: onAdImpression - Ghi nhận lượt hiển thị.")
+                        activity.runOnUiThread {
+                            onShown?.invoke()
+                        }
+                    }
 
-                adView.setVisible()
-                adFrame.setVisible()
+                    override fun onAdClicked() {
+                        AdsLog.i(TAG, "Banner: onAdClicked - Người dùng nhấp vào quảng cáo.")
+                    }
 
-                onResult?.invoke(adView)
+                    override fun onAdShowedFullScreenContent() {
+                        AdsLog.i(TAG, "Banner: onAdShowedFullScreenContent.")
+                    }
+
+                    override fun onAdDismissedFullScreenContent() {
+                        AdsLog.i(TAG, "Banner: onAdDismissedFullScreenContent.")
+                    }
+
+                    override fun onAdFailedToShowFullScreenContent(fullScreenContentError: FullScreenContentError) {
+                        AdsLog.w(
+                            TAG,
+                            "Banner: onAdFailedToShowFullScreenContent: $fullScreenContentError"
+                        )
+                    }
+
+                    override fun onAdPaid(value: AdValue) {
+                        trackingRevenueAd(ad, value)
+                    }
+                }
+
+                activity.runOnUiThread {
+                    if (activity.isFinishing || activity.isDestroyed || mAdView !== adView) return@runOnUiThread
+                    // Ẩn shimmer và hiển thị AdView
+                    ShimmerHelper.hideShimmer(adFrame)
+                    adView.setVisible()
+                    adFrame.setVisible()
+                    onResult?.invoke(adView)
+                }
             }
 
             override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                super.onAdFailedToLoad(loadAdError)
                 AdsLog.e(
                     TAG,
-                    "AdListener: onAdFailedToLoad - Lỗi tải quảng cáo: Mã lỗi = ${loadAdError.code}, Nội dung = ${loadAdError.message}"
+                    "Banner: onAdFailedToLoad - Lỗi tải quảng cáo: Mã lỗi = ${loadAdError.code}, Nội dung = ${loadAdError.message}"
                 )
 
-                if (activity.isFinishing || activity.isDestroyed) {
+                if (activity.isFinishing || activity.isDestroyed || mAdView !== adView) {
                     AdsLog.w(
                         TAG,
-                        "AdListener: onAdFailedToLoad - Activity đã kết thúc hoặc bị hủy. Hủy tác vụ thử lại."
+                        "Banner: onAdFailedToLoad - Activity đã kết thúc hoặc banner đã bị hủy. Hủy tác vụ thử lại."
                     )
                     return
                 }
 
                 retryAttempt++
-                AdsLog.d(TAG, "AdListener: onAdFailedToLoad - Lượt thử lại hiện tại: $retryAttempt")
+                AdsLog.d(TAG, "Banner: onAdFailedToLoad - Lượt thử lại hiện tại: $retryAttempt")
 
                 if (retryAttempt > 2) {
                     AdsLog.e(
                         TAG,
-                        "AdListener: onAdFailedToLoad - Vượt quá số lần thử lại tối đa (2). Dọn dẹp giao diện và gọi callback thất bại."
+                        "Banner: onAdFailedToLoad - Vượt quá số lần thử lại tối đa (2). Dọn dẹp giao diện và gọi callback thất bại."
                     )
-                    ShimmerHelper.hideAllAndGone(adFrame)
-                    onResult?.invoke(null)
+                    activity.runOnUiThread {
+                        ShimmerHelper.hideAllAndGone(adFrame)
+                        onResult?.invoke(null)
+                    }
                     return
                 }
 
-                // Vẫn giữ shimmer hiển thị trong lúc retry
-                ShimmerHelper.showShimmer(adFrame)
+                activity.runOnUiThread {
+                    ShimmerHelper.showShimmer(adFrame)
+                }
 
                 val delay = minOf(2.0.pow(retryAttempt.toDouble()).toLong(), 60) * 1000
                 AdsLog.d(
                     TAG,
-                    "AdListener: onAdFailedToLoad - Lập lịch thử lại (retry) sau ${delay}ms"
+                    "Banner: onAdFailedToLoad - Lập lịch thử lại (retry) sau ${delay}ms"
                 )
 
                 val runnable = Runnable {
-                    if (activity.isFinishing || activity.isDestroyed) {
+                    if (activity.isFinishing || activity.isDestroyed || mAdView !== adView) {
                         AdsLog.w(
                             TAG,
-                            "AdListener: Tác vụ thử lại - Activity đã bị hủy. Bỏ qua tải."
+                            "Banner: Tác vụ thử lại - Activity đã bị hủy. Bỏ qua tải."
                         )
                         return@Runnable
                     }
                     AdsLog.d(
                         TAG,
-                        "AdListener: Tác vụ thử lại - Bắt đầu tải lại quảng cáo (Lần thử $retryAttempt)..."
+                        "Banner: Tác vụ thử lại - Bắt đầu tải lại quảng cáo (Lần thử $retryAttempt)..."
                     )
-                    mAdView?.loadAd(adRequest)
+                    mAdView?.loadAd(bannerAdRequest, this)
                 }
                 retryRunnable = runnable
                 handler.postDelayed(runnable, delay)
             }
-
-            override fun onAdImpression() {
-                super.onAdImpression()
-                AdsLog.i(TAG, "AdListener: onAdImpression - Ghi nhận lượt hiển thị (Impression).")
-                onShown?.invoke()
-            }
-
-            override fun onAdOpened() {
-                super.onAdOpened()
-                AdsLog.i(
-                    TAG,
-                    "AdListener: onAdOpened - Người dùng đã nhấp vào và quảng cáo mở ra overlay."
-                )
-            }
-
-            override fun onAdClosed() {
-                super.onAdClosed()
-                AdsLog.i(TAG, "AdListener: onAdClosed - Quảng cáo overlay đóng lại.")
-            }
-
-            override fun onAdClicked() {
-                super.onAdClicked()
-                AdsLog.i(TAG, "AdListener: onAdClicked - Người dùng nhấp vào quảng cáo.")
-            }
         }
 
-        AdsLog.d(TAG, "requestBanner: Gọi loadAd() để bắt đầu tải quảng cáo từ AdMob.")
-        adView.loadAd(adRequest)
+        AdsLog.d(TAG, "requestBanner: Gọi loadAd() để bắt đầu tải quảng cáo từ AdMob GMA Next-Gen.")
+        adView.loadAd(bannerAdRequest, adLoadCallback)
     }
 
     private fun getAdSize(activity: Activity, type: TypeAds): AdSize {
@@ -354,7 +364,6 @@ object Banner {
         retryRunnable = null
         retryAttempt = 0
 
-        mAdView?.adListener = emptyAdListener
         if (mAdView?.parent is ViewGroup) {
             (mAdView?.parent as ViewGroup).removeView(mAdView)
         }

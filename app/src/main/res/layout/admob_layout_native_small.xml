@@ -73,7 +73,7 @@
     </com.facebook.shimmer.ShimmerFrameLayout>
 
     <!-- NATIVE AD VIEW: Tuân thủ quy tắc Meta Bidding (Bắt buộc có MediaView) -->
-    <com.google.android.gms.ads.nativead.NativeAdView
+    <com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView
         android:id="@+id/native_ad_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -98,7 +98,7 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent">
 
-                <com.google.android.gms.ads.nativead.MediaView
+                <com.google.android.libraries.ads.mobile.sdk.nativead.MediaView
                     android:id="@+id/media_view"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" />
@@ -189,5 +189,5 @@
                 app:layout_constraintStart_toStartOf="@+id/imvCardView" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
-    </com.google.android.gms.ads.nativead.NativeAdView>
+    </com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView>
 </FrameLayout>

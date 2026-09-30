@@ -51,6 +51,12 @@ android {
     }
 }
 
+configurations.configureEach {
+    exclude group: "com.google.android.gms", module: "play-services-ads"
+    exclude group: "com.google.android.gms", module: "play-services-ads-lite"
+    exclude group: "com.google.android.gms", module: "play-services-ads-base"
+}
+
 dependencies {
 
     implementation(libs.androidx.fragment.ktx)
@@ -62,10 +68,14 @@ dependencies {
 
 
     //lib ads
-    api(libs.play.services.ads)
+    api(libs.ads.mobile.sdk)
 
     //mediation
-    api(libs.admob.adapter)
+    api(libs.admob.adapter) {
+        exclude group: "com.google.android.gms", module: "play-services-ads"
+        exclude group: "com.google.android.gms", module: "play-services-ads-lite"
+        exclude group: "com.google.android.gms", module: "play-services-ads-base"
+    }
     api(libs.user.messaging.platform)
 
     // Tracking MMP SDKs (compileOnly để app có thể chọn dùng Adjust, AppsFlyer hoặc chỉ dùng Firebase)

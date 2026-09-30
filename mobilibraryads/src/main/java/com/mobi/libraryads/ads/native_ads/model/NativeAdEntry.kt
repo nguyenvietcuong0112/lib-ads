@@ -1,7 +1,6 @@
 package com.mobi.libraryads.ads.native_ads.model
 
-import com.google.android.gms.ads.nativead.NativeAd
-import com.google.android.gms.ads.nativead.NativeAdOptions
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd
 
 data class NativeAdEntry(
     val name: String,                           // Tên định danh duy nhất (vd: "home_native", "language_native")
@@ -15,5 +14,5 @@ data class NativeAdEntry(
     var activeAd: NativeAd? = null,             // Ad đang hoạt động/hiển thị
     var adapterClassName: String = "",          // Tên adapter mediation (để xử lý Meta)
     var isHighFloorLoaded: Boolean = false,     // Ad hiện tại đã load có phải high floor ko
-    var isHighFloorActive: Boolean = false,     // Ad hiện tại đang active/show có phải high floor ko
+    var isHighFloorActive: Boolean = false      // Ad hiện tại đang active/show có phải high floor ko
 )

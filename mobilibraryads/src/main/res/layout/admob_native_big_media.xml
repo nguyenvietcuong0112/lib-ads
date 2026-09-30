@@ -3,7 +3,7 @@
 <!--    xmlns:app="http://schemas.android.com/apk/res-auto"-->
 <!--    xmlns:tools="http://schemas.android.com/tools">-->
 
-<com.google.android.gms.ads.nativead.NativeAdView
+<com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -38,7 +38,7 @@
         android:background="@color/bg_color_ads_2"
         android:visibility="gone">
 
-        <com.google.android.gms.ads.nativead.MediaView
+        <com.google.android.libraries.ads.mobile.sdk.nativead.MediaView
             android:id="@+id/media_view"
             android:layout_width="match_parent"
             android:layout_height="140dp"
@@ -178,6 +178,6 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 
-</com.google.android.gms.ads.nativead.NativeAdView>
+</com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView>
 
     <!--</merge>-->

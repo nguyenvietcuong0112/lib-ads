@@ -4,7 +4,7 @@ import android.widget.FrameLayout
 import com.mobi.libraryads.ads.native_ads.callback.INativeAdCallback
 import com.mobi.libraryads.ads.native_ads.model.AdLoadState
 import com.mobi.libraryads.ads.native_ads.model.NativeAdEntry
-import com.google.android.gms.ads.nativead.NativeAd
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd
 import java.lang.ref.WeakReference
 import java.util.concurrent.ConcurrentHashMap
 import com.mobi.libraryads.commons.utils.AdsLog

@@ -127,6 +127,12 @@ kotlin {
     }
 }
 
+configurations.all {
+    exclude(group = "com.google.android.gms", module = "play-services-ads")
+    exclude(group = "com.google.android.gms", module = "play-services-ads-lite")
+    exclude(group = "com.google.android.gms", module = "play-services-ads-base")
+}
+
 dependencies {
 
     implementation (libs.androidx.core)

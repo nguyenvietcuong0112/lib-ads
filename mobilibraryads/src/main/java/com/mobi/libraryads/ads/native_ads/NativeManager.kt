@@ -22,7 +22,7 @@ import com.mobi.libraryads.commons.adjust.trackingRevenueAd
 import com.mobi.libraryads.commons.utils.AdsLog
 import com.mobi.libraryads.commons.utils.setGone
 import com.mobi.libraryads.commons.utils.setVisible
-import com.google.android.gms.ads.nativead.NativeAd
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd
 import com.mobi.libraryads.FOConfigs
 import com.mobi.libraryads.ads.utils.EnumAdsNamePosition
 import com.mobi.libraryads.R

@@ -1,6 +1,6 @@
 package com.mobi.libraryads.ads.inter_ads
 
-import com.google.android.gms.ads.interstitial.InterstitialAd
+import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAd
 
 data class InterAdModel(
     var name: String,

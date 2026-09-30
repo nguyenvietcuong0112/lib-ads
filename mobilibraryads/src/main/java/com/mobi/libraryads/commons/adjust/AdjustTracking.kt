@@ -1,139 +1,138 @@
 package com.mobi.libraryads.commons.adjust
 
 import android.util.Log
-import com.google.android.gms.ads.AdView
-import com.google.android.gms.ads.AdapterResponseInfo
-import com.google.android.gms.ads.OnPaidEventListener
-import com.google.android.gms.ads.appopen.AppOpenAd
-import com.google.android.gms.ads.interstitial.InterstitialAd
-import com.google.android.gms.ads.nativead.NativeAd
-import com.google.android.gms.ads.rewarded.RewardedAd
+import com.google.android.libraries.ads.mobile.sdk.appopen.AppOpenAd
+import com.google.android.libraries.ads.mobile.sdk.banner.BannerAd
+import com.google.android.libraries.ads.mobile.sdk.common.AdSourceResponseInfo
+import com.google.android.libraries.ads.mobile.sdk.common.AdValue
+import com.google.android.libraries.ads.mobile.sdk.interstitial.InterstitialAd
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdEventCallback
+import com.google.android.libraries.ads.mobile.sdk.rewarded.RewardedAd
 import com.mobi.libraryads.commons.tracking.AdTrackingManager
 import com.mobi.libraryads.commons.tracking.model.AdRevenueData
 
-fun trackingRevenueAd(adFull: InterstitialAd) {
-    adFull.onPaidEventListener = OnPaidEventListener { adValue ->
-        val valueMicros = adValue.valueMicros
-        val currencyCode = adValue.currencyCode
-        val adSourceName = try {
-            adFull.responseInfo.adapterResponses.firstOrNull()?.adSourceName ?: ""
-        } catch (_: Exception) { "" }
+fun trackingRevenueAd(adFull: InterstitialAd, adValue: AdValue) {
+    val valueMicros = adValue.valueMicros
+    val currencyCode = adValue.currencyCode
+    val adSourceName = try {
+        adFull.getResponseInfo().loadedAdSourceResponseInfo?.name ?: ""
+    } catch (_: Exception) { "" }
 
-        Log.d(
-            "tracking_rewarded",
-            "tracking InterstitialAd: valueMicros: $valueMicros, currencyCode: $currencyCode, source: $adSourceName"
-        )
+    Log.d(
+        "tracking_rewarded",
+        "tracking InterstitialAd: valueMicros: $valueMicros, currencyCode: $currencyCode, source: $adSourceName"
+    )
 
-        AdTrackingManager.trackAdRevenue(
-            AdRevenueData(
-                valueMicros = valueMicros,
-                currencyCode = currencyCode,
-                adSourceName = adSourceName,
-                adFormat = "Interstitial",
-                precisionType = adValue.precisionType
-            )
+    AdTrackingManager.trackAdRevenue(
+        AdRevenueData(
+            valueMicros = valueMicros,
+            currencyCode = currencyCode,
+            adSourceName = adSourceName,
+            adFormat = "Interstitial",
+            precisionType = adValue.precisionType.ordinal
         )
-    }
+    )
 }
 
-fun trackingRevenueAd(ad: RewardedAd) {
-    ad.onPaidEventListener = OnPaidEventListener { adValue ->
-        val valueMicros = adValue.valueMicros
-        val currencyCode = adValue.currencyCode
-        val adSourceName = try {
-            ad.responseInfo.adapterResponses.firstOrNull()?.adSourceName ?: ""
-        } catch (_: Exception) { "" }
+fun trackingRevenueAd(ad: RewardedAd, adValue: AdValue) {
+    val valueMicros = adValue.valueMicros
+    val currencyCode = adValue.currencyCode
+    val adSourceName = try {
+        ad.getResponseInfo().loadedAdSourceResponseInfo?.name ?: ""
+    } catch (_: Exception) { "" }
 
-        Log.d(
-            "tracking_rewarded",
-            "tracking RewardAds: valueMicros: $valueMicros, currencyCode: $currencyCode, source: $adSourceName"
-        )
+    Log.d(
+        "tracking_rewarded",
+        "tracking RewardAds: valueMicros: $valueMicros, currencyCode: $currencyCode, source: $adSourceName"
+    )
 
-        AdTrackingManager.trackAdRevenue(
-            AdRevenueData(
-                valueMicros = valueMicros,
-                currencyCode = currencyCode,
-                adSourceName = adSourceName,
-                adFormat = "Rewarded",
-                precisionType = adValue.precisionType
-            )
+    AdTrackingManager.trackAdRevenue(
+        AdRevenueData(
+            valueMicros = valueMicros,
+            currencyCode = currencyCode,
+            adSourceName = adSourceName,
+            adFormat = "Rewarded",
+            precisionType = adValue.precisionType.ordinal
         )
-    }
+    )
 }
 
 fun trackingRevenueAd(ad: NativeAd) {
-    ad.setOnPaidEventListener { values ->
-        val valueMicros = values.valueMicros
-        val currencyCode = values.currencyCode
-        val adSourceName = try {
-            ad.responseInfo?.adapterResponses?.firstOrNull()?.adSourceName ?: ""
-        } catch (_: Exception) { "" }
-
-        Log.d(
-            "tracking_rewarded",
-            "tracking Native: valueMicros: $valueMicros, currencyCode: $currencyCode, source: $adSourceName"
-        )
-
-        AdTrackingManager.trackAdRevenue(
-            AdRevenueData(
-                valueMicros = valueMicros,
-                currencyCode = currencyCode,
-                adSourceName = adSourceName,
-                adFormat = "Native",
-                precisionType = values.precisionType
-            )
-        )
+    ad.adEventCallback = object : NativeAdEventCallback {
+        override fun onAdPaid(value: AdValue) {
+            trackingRevenueAd(ad, value)
+        }
     }
 }
 
-fun trackingRevenueAd(ad: AdView) {
-    ad.setOnPaidEventListener { values ->
-        val valueMicros = values.valueMicros
-        val currencyCode = values.currencyCode
-        val adSourceName = try {
-            ad.responseInfo?.adapterResponses?.firstOrNull()?.adSourceName ?: ""
-        } catch (_: Exception) { "" }
+fun trackingRevenueAd(ad: NativeAd, values: AdValue) {
+    val valueMicros = values.valueMicros
+    val currencyCode = values.currencyCode
+    val adSourceName = try {
+        ad.getResponseInfo().loadedAdSourceResponseInfo?.name ?: ""
+    } catch (_: Exception) { "" }
 
-        Log.d(
-            "tracking_rewarded",
-            "tracking banner: valueMicros: $valueMicros, currencyCode: $currencyCode, source: $adSourceName"
-        )
+    Log.d(
+        "tracking_rewarded",
+        "tracking Native: valueMicros: $valueMicros, currencyCode: $currencyCode, source: $adSourceName"
+    )
 
-        AdTrackingManager.trackAdRevenue(
-            AdRevenueData(
-                valueMicros = valueMicros,
-                currencyCode = currencyCode,
-                adSourceName = adSourceName,
-                adFormat = "Banner",
-                precisionType = values.precisionType
-            )
+    AdTrackingManager.trackAdRevenue(
+        AdRevenueData(
+            valueMicros = valueMicros,
+            currencyCode = currencyCode,
+            adSourceName = adSourceName,
+            adFormat = "Native",
+            precisionType = values.precisionType.ordinal
         )
-    }
+    )
 }
 
-fun trackingRevenueAd(ad: AppOpenAd) {
-    ad.onPaidEventListener = OnPaidEventListener { adValue ->
-        val valueMicros = adValue.valueMicros
-        val currencyCode = adValue.currencyCode
-        val adSourceName = try {
-            ad.responseInfo.adapterResponses.firstOrNull()?.adSourceName ?: ""
-        } catch (_: Exception) { "" }
+fun trackingRevenueAd(ad: BannerAd, values: AdValue) {
+    val valueMicros = values.valueMicros
+    val currencyCode = values.currencyCode
+    val adSourceName = try {
+        ad.getResponseInfo().loadedAdSourceResponseInfo?.name ?: ""
+    } catch (_: Exception) { "" }
 
-        Log.d(
-            "tracking_rewarded",
-            "tracking OpenApp: valueMicros: $valueMicros, currencyCode: $currencyCode, source: $adSourceName"
-        )
+    Log.d(
+        "tracking_rewarded",
+        "tracking banner: valueMicros: $valueMicros, currencyCode: $currencyCode, source: $adSourceName"
+    )
 
-        AdTrackingManager.trackAdRevenue(
-            AdRevenueData(
-                valueMicros = valueMicros,
-                currencyCode = currencyCode,
-                adSourceName = adSourceName,
-                adFormat = "AppOpen",
-                precisionType = adValue.precisionType
-            )
+    AdTrackingManager.trackAdRevenue(
+        AdRevenueData(
+            valueMicros = valueMicros,
+            currencyCode = currencyCode,
+            adSourceName = adSourceName,
+            adFormat = "Banner",
+            precisionType = values.precisionType.ordinal
         )
-    }
+    )
+}
+
+fun trackingRevenueAd(ad: AppOpenAd, adValue: AdValue) {
+    val valueMicros = adValue.valueMicros
+    val currencyCode = adValue.currencyCode
+    val adSourceName = try {
+        ad.getResponseInfo().loadedAdSourceResponseInfo?.name ?: ""
+    } catch (_: Exception) { "" }
+
+    Log.d(
+        "tracking_rewarded",
+        "tracking OpenApp: valueMicros: $valueMicros, currencyCode: $currencyCode, source: $adSourceName"
+    )
+
+    AdTrackingManager.trackAdRevenue(
+        AdRevenueData(
+            valueMicros = valueMicros,
+            currencyCode = currencyCode,
+            adSourceName = adSourceName,
+            adFormat = "AppOpen",
+            precisionType = adValue.precisionType.ordinal
+        )
+    )
 }
 
 fun trackingEvent(tokenEvent: String?) {
@@ -145,15 +144,14 @@ fun trackingEvent(tokenEvent: String?) {
 fun onTrackingAdjustOfAdmob(
     valueMicros: Long,
     currencyCode: String,
-    loadedAdapterResponseInfo: AdapterResponseInfo
+    loadedAdapterResponseInfo: AdSourceResponseInfo?
 ) {
     AdTrackingManager.trackAdRevenue(
         AdRevenueData(
             valueMicros = valueMicros,
             currencyCode = currencyCode,
-            adSourceName = loadedAdapterResponseInfo.adSourceName,
+            adSourceName = loadedAdapterResponseInfo?.name ?: "",
             adFormat = "AdMob"
         )
     )
 }
-

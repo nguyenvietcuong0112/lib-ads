@@ -30,7 +30,8 @@ import com.mobi.libraryads.data.OBConfig
 import com.mobi.libraryads.data.SplashConfig
 import com.mobi.libraryads.views.language.LanguageActivity
 import com.mobi.libraryads.views.splash.SplashActivity
-import com.google.android.gms.ads.MobileAds
+import com.google.android.libraries.ads.mobile.sdk.MobileAds
+import com.google.android.libraries.ads.mobile.sdk.initialization.InitializationConfig
 import com.google.firebase.Firebase
 import com.google.firebase.initialize
 import kotlinx.coroutines.CoroutineScope
@@ -42,14 +43,31 @@ import kotlinx.coroutines.launch
 class AdsApplication(
     private val globalClass: Application,
     var remoteKeys: KonfigModel? = null,
-    var isDebug: Boolean = false
+    var isDebug: Boolean = false,
+    var appId: String = ""
 ) : Application.ActivityLifecycleCallbacks,
     LifecycleObserver {
 
     init {
         CoroutineScope(Dispatchers.IO).launch {
-            MobileAds.initialize(globalClass) {
-                Log.d("AdMob", "MobileAds initialized")
+            val resolvedAppId = if (appId.isNotBlank()) {
+                appId
+            } else {
+                try {
+                    val appInfo = globalClass.packageManager.getApplicationInfo(
+                        globalClass.packageName,
+                        android.content.pm.PackageManager.GET_META_DATA
+                    )
+                    appInfo.metaData?.getString("com.google.android.gms.ads.APPLICATION_ID") ?: ""
+                } catch (_: Exception) {
+                    ""
+                }
+            }
+            val config = InitializationConfig.Builder(resolvedAppId)
+                .setNativeValidatorDisabled()
+                .build()
+            MobileAds.initialize(globalClass, config) {
+                Log.d("AdMob", "MobileAds Next-Gen initialized")
             }
         }
         AdsLog.init(globalClass, isDebug)

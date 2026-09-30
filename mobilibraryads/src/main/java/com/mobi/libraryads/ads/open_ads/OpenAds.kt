@@ -17,12 +17,13 @@ import com.mobi.libraryads.commons.firebasetracking.EventsNameFirebase.resume_op
 import com.mobi.libraryads.commons.firebasetracking.FirebaseTracking.postFirebaseEvent
 import com.mobi.libraryads.commons.remote.ValueRemoteConfigModule
 import com.mobi.libraryads.commons.sharepreference.SPF
-import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.FullScreenContentCallback
-import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.appopen.AppOpenAd
-import com.google.android.gms.ads.appopen.AppOpenAd.AppOpenAdLoadCallback
+import com.google.android.libraries.ads.mobile.sdk.appopen.AppOpenAd
+import com.google.android.libraries.ads.mobile.sdk.appopen.AppOpenAdEventCallback
+import com.google.android.libraries.ads.mobile.sdk.common.AdLoadCallback
+import com.google.android.libraries.ads.mobile.sdk.common.AdRequest
+import com.google.android.libraries.ads.mobile.sdk.common.AdValue
+import com.google.android.libraries.ads.mobile.sdk.common.FullScreenContentError
+import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError
 
 class OpenAds(private val globalClass: Application) :
     Application.ActivityLifecycleCallbacks, DefaultLifecycleObserver {
@@ -31,12 +32,10 @@ class OpenAds(private val globalClass: Application) :
 
     private var currentActivity: Activity? = null
 
-
     init {
         globalClass.registerActivityLifecycleCallbacks(this)
         ProcessLifecycleOwner.get().lifecycle.addObserver(this)
     }
-
 
     fun disableShowAOA() {
         ignoreAOA = true
@@ -49,41 +48,36 @@ class OpenAds(private val globalClass: Application) :
     private var isLoading = false
 
     fun preloadAOA() {
+        val aoaId = FOConfigs.splashConfig.adsSplashConfig.admobAOAId
         if (SPF(globalClass).is_app_pro
             || !ValueRemoteConfigModule.resume_open_app
-            || FOConfigs.splashConfig.adsSplashConfig.admobAOAId == ""
+            || aoaId.isBlank()
             || isAdAvailable()
             || isLoading
         ) return
 
-        val request: AdRequest = getAdRequest()
-        val loadCallback: AppOpenAdLoadCallback = object : AppOpenAdLoadCallback() {
-            override fun onAdLoaded(ad: AppOpenAd) {
-                super.onAdLoaded(ad)
-                ad.setImmersiveMode(true)
-                mAppOpenAd = ad
-                isLoading = false
-                Log.d("AdMob", "preloadAOA onAdLoaded")
-            }
-
-            override fun onAdFailedToLoad(p0: LoadAdError) {
-                super.onAdFailedToLoad(p0)
-                isLoading = false
-                Log.d("AdMob", "preloadAOA onAdFailedToLoad")
-            }
-        }
+        val request = AdRequest.Builder(aoaId).build()
         isLoading = true
 
         AppOpenAd.load(
-            globalClass,
-            FOConfigs.splashConfig.adsSplashConfig.admobAOAId,
             request,
-            loadCallback
+            object : AdLoadCallback<AppOpenAd> {
+                override fun onAdLoaded(ad: AppOpenAd) {
+                    ad.setImmersiveMode(true)
+                    mAppOpenAd = ad
+                    isLoading = false
+                    Log.d("AdMob", "preloadAOA onAdLoaded")
+                }
+
+                override fun onAdFailedToLoad(error: LoadAdError) {
+                    isLoading = false
+                    Log.d("AdMob", "preloadAOA onAdFailedToLoad: ${error.message}")
+                }
+            }
         )
 
         Log.d("AdMob", "preloadAOA startload")
     }
-
 
     private fun showAOA(activity: Activity) {
         if (SPF(globalClass).is_app_pro
@@ -96,37 +90,30 @@ class OpenAds(private val globalClass: Application) :
             return
         }
 
-        mAppOpenAd?.let {
-            trackingRevenueAd(it)
-        }
+        val appOpenAd = mAppOpenAd ?: return
 
-        mAppOpenAd?.fullScreenContentCallback = object : FullScreenContentCallback() {
-
+        appOpenAd.adEventCallback = object : AppOpenAdEventCallback {
             override fun onAdDismissedFullScreenContent() {
-                super.onAdDismissedFullScreenContent()
                 mAppOpenAd = null
                 StatusShowAd.resetAdStatuses()
                 preloadAOA()
             }
 
-            override fun onAdFailedToShowFullScreenContent(p0: AdError) {
-                super.onAdFailedToShowFullScreenContent(p0)
+            override fun onAdFailedToShowFullScreenContent(fullScreenContentError: FullScreenContentError) {
                 StatusShowAd.resetAdStatuses()
                 preloadAOA()
             }
 
             override fun onAdShowedFullScreenContent() {
-                super.onAdShowedFullScreenContent()
                 isOpenAdShown = true
                 resume_open_app_view.postFirebaseEvent()
             }
+
+            override fun onAdPaid(value: AdValue) {
+                trackingRevenueAd(appOpenAd, value)
+            }
         }
-        mAppOpenAd?.show(activity)
-
-    }
-
-    private fun getAdRequest(): AdRequest {
-        return AdRequest.Builder().build()
+        appOpenAd.show(activity)
     }
 
     private fun isAdAvailable(): Boolean {

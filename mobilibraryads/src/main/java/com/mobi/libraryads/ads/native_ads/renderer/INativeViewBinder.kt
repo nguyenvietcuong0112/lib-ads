@@ -1,7 +1,7 @@
 package com.mobi.libraryads.ads.native_ads.renderer
 
-import com.google.android.gms.ads.nativead.NativeAd
-import com.google.android.gms.ads.nativead.NativeAdView
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView
 
 interface INativeViewBinder {
     /** Kiểm tra binder này có hỗ trợ adapter/mediation đó không */

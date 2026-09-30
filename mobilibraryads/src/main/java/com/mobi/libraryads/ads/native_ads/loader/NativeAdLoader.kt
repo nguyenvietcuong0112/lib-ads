@@ -1,18 +1,19 @@
 package com.mobi.libraryads.ads.native_ads.loader
 
 import android.content.Context
+import android.os.Handler
+import android.os.Looper
 import com.mobi.libraryads.ads.native_ads.model.AdLoadState
 import com.mobi.libraryads.ads.native_ads.model.LoadStrategy
 import com.mobi.libraryads.ads.native_ads.model.NativeAdEntry
 import com.mobi.libraryads.ads.native_ads.repository.NativeAdRepository
 import com.mobi.libraryads.commons.utils.AdsLog
-import com.google.android.gms.ads.AdListener
-import com.google.android.gms.ads.AdLoader
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.VideoOptions
-import com.google.android.gms.ads.nativead.NativeAd
-import com.google.android.gms.ads.nativead.NativeAdOptions
+import com.google.android.libraries.ads.mobile.sdk.common.AdChoicesPlacement
+import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdLoader as GmaNativeAdLoader
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdLoaderCallback
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdRequest
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -60,7 +61,7 @@ class NativeAdLoader(private val repository: NativeAdRepository) {
         performLoad(context, entry.id) { ad ->
             val success = ad != null
             if (ad != null) {
-                val adapterClass = ad.responseInfo?.mediationAdapterClassName ?: ""
+                val adapterClass = ad.getResponseInfo().adapterClassName ?: ""
                 repository.updateState(entry.name, AdLoadState.LOADED, ad, adapterClass)
                 AdsLog.d(TAG, "preloadNative: Successfully loaded ${entry.name} with adapter: $adapterClass")
             } else {
@@ -114,15 +115,16 @@ class NativeAdLoader(private val repository: NativeAdRepository) {
         }
 
         repository.updateState(entry.name, AdLoadState.LOADING)
-        AdsLog.d(TAG, "preloadNativeWithHigh: Start loading for ${entry.name} using strategy: $strategy")
 
         if (strategy == LoadStrategy.SEQUENTIAL) {
+            AdsLog.d(TAG, "preloadNativeWithHigh [SEQUENTIAL]: Strategy chosen for ${entry.name}")
+
             if (remoteConfigHigh && entry.idHigh.isNotBlank()) {
                 // Load High first
                 AdsLog.d(TAG, "preloadNativeWithHigh [SEQUENTIAL]: Loading high floor: ${entry.idHigh}")
                 performLoad(context, entry.idHigh) { adHigh ->
                     if (adHigh != null) {
-                        val adapterClass = adHigh.responseInfo?.mediationAdapterClassName ?: ""
+                        val adapterClass = adHigh.getResponseInfo().adapterClassName ?: ""
                         repository.updateState(entry.name, AdLoadState.LOADED, adHigh, adapterClass, isHighFloor = true)
                         AdsLog.d(TAG, "preloadNativeWithHigh [SEQUENTIAL]: High floor loaded successfully for ${entry.name}")
                         triggerCallbacks(entry.name, true)
@@ -133,7 +135,7 @@ class NativeAdLoader(private val repository: NativeAdRepository) {
                             performLoad(context, entry.id) { adNormal ->
                                 val success = adNormal != null
                                 if (adNormal != null) {
-                                    val adapterClass = adNormal.responseInfo?.mediationAdapterClassName ?: ""
+                                    val adapterClass = adNormal.getResponseInfo().adapterClassName ?: ""
                                     repository.updateState(entry.name, AdLoadState.LOADED, adNormal, adapterClass, isHighFloor = false)
                                     AdsLog.d(TAG, "preloadNativeWithHigh [SEQUENTIAL]: Normal floor loaded successfully for ${entry.name}")
                                 } else {
@@ -154,7 +156,7 @@ class NativeAdLoader(private val repository: NativeAdRepository) {
                 performLoad(context, entry.id) { adNormal ->
                     val success = adNormal != null
                     if (adNormal != null) {
-                        val adapterClass = adNormal.responseInfo?.mediationAdapterClassName ?: ""
+                        val adapterClass = adNormal.getResponseInfo().adapterClassName ?: ""
                         repository.updateState(entry.name, AdLoadState.LOADED, adNormal, adapterClass, isHighFloor = false)
                         AdsLog.d(TAG, "preloadNativeWithHigh [SEQUENTIAL]: Normal floor loaded successfully for ${entry.name}")
                     } else {
@@ -207,7 +209,7 @@ class NativeAdLoader(private val repository: NativeAdRepository) {
                         normalAd = null
                     }
 
-                    val adapterClass = adToUse?.responseInfo?.mediationAdapterClassName ?: ""
+                    val adapterClass = adToUse?.getResponseInfo()?.adapterClassName ?: ""
                     repository.updateState(entry.name, AdLoadState.LOADED, adToUse, adapterClass, isHighFloor = true)
                     AdsLog.d(TAG, "preloadNativeWithHigh [PARALLEL]: High ad loaded first/preferred for ${entry.name}")
                     triggerCallbacks(entry.name, true)
@@ -219,7 +221,7 @@ class NativeAdLoader(private val repository: NativeAdRepository) {
                     if (normalAd != null) {
                          val adToUse = normalAd
                          normalAd = null
-                         val adapterClass = adToUse?.responseInfo?.mediationAdapterClassName ?: ""
+                         val adapterClass = adToUse?.getResponseInfo()?.adapterClassName ?: ""
                          repository.updateState(entry.name, AdLoadState.LOADED, adToUse, adapterClass, isHighFloor = false)
                          AdsLog.d(TAG, "preloadNativeWithHigh [PARALLEL]: Normal ad loaded for ${entry.name} (High floor failed)")
                         triggerCallbacks(entry.name, true)
@@ -256,31 +258,40 @@ class NativeAdLoader(private val repository: NativeAdRepository) {
     }
 
     /**
-     * Load nội bộ 1 ad ID
+     * Load nội bộ 1 ad ID theo GMA Next-Gen SDK
      */
     private fun performLoad(
         context: Context,
         adId: String,
         onResult: (NativeAd?) -> Unit
     ) {
-        CoroutineScope(Dispatchers.Main).launch {
-            val adOptions = NativeAdOptions.Builder()
-                .setAdChoicesPlacement(NativeAdOptions.ADCHOICES_TOP_RIGHT)
+        val loadAction = {
+            val adRequest = NativeAdRequest.Builder(
+                adId,
+                listOf(NativeAd.NativeAdType.NATIVE)
+            ).setAdChoicesPlacement(AdChoicesPlacement.TOP_RIGHT).build()
 
-
-            val builder = AdLoader.Builder(context.applicationContext, adId)
-                .forNativeAd { nativeAd ->
+            val adCallback = object : NativeAdLoaderCallback {
+                override fun onNativeAdLoaded(nativeAd: NativeAd) {
                     onResult(nativeAd)
                 }
-                .withAdListener(object : AdListener() {
-                    override fun onAdFailedToLoad(loadAdError: LoadAdError) {
-                        AdsLog.w(TAG, "performLoad: onAdFailedToLoad: ID = $adId, message = ${loadAdError.message}")
-                        onResult(null)
-                    }
-                })
-                .withNativeAdOptions(adOptions.build())
 
-            builder.build().loadAd(AdRequest.Builder().build())
+                override fun onAdFailedToLoad(adError: LoadAdError) {
+                    AdsLog.w(
+                        TAG,
+                        "performLoad: onAdFailedToLoad: ID = $adId, message = ${adError.message}"
+                    )
+                    onResult(null)
+                }
+            }
+
+            GmaNativeAdLoader.load(adRequest, adCallback)
+        }
+
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            loadAction()
+        } else {
+            Handler(Looper.getMainLooper()).post(loadAction)
         }
     }
 

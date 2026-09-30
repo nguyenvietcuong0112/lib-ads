@@ -9,9 +9,9 @@ import com.mobi.libraryads.R
 import com.mobi.libraryads.commons.utils.setGone
 import com.mobi.libraryads.commons.utils.setInVisible
 import com.mobi.libraryads.commons.utils.setVisible
-import com.google.android.gms.ads.nativead.MediaView
-import com.google.android.gms.ads.nativead.NativeAd
-import com.google.android.gms.ads.nativead.NativeAdView
+import com.google.android.libraries.ads.mobile.sdk.nativead.MediaView
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView
 
 class DefaultNativeViewBinder : INativeViewBinder {
     override fun canHandle(adapterClassName: String): Boolean = true  // Fallback binder
@@ -26,7 +26,6 @@ class DefaultNativeViewBinder : INativeViewBinder {
         val mediaView: MediaView? = adView.findViewById(R.id.media_view)
         if (mediaView != null) {
             try {
-                adView.mediaView = mediaView
                 ad.mediaContent?.let { mediaContent ->
                     mediaView.mediaContent = mediaContent
                     mediaView.setBackgroundColor(Color.TRANSPARENT)
@@ -38,8 +37,6 @@ class DefaultNativeViewBinder : INativeViewBinder {
                 e.printStackTrace()
                 mediaView.setInVisible()
             }
-        } else {
-            adView.mediaView = null
         }
 
         // Headline
@@ -85,7 +82,7 @@ class DefaultNativeViewBinder : INativeViewBinder {
             }
         }
 
-        adView.setNativeAd(ad)
+        adView.registerNativeAd(ad, mediaView)
 
         // Show/hide content and shimmer containers if present
         val adContent: ViewGroup? = adView.findViewById(R.id.ad_content_view)

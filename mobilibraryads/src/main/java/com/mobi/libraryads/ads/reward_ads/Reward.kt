@@ -11,12 +11,15 @@ import com.mobi.libraryads.commons.remote.ValueRemoteConfigModule
 import com.mobi.libraryads.commons.sharepreference.SPF
 import com.mobi.libraryads.commons.utils.isInternetConnected
 import com.mobi.libraryads.views.dialogs.DialogLoadingAds
-import com.google.android.gms.ads.AdError
-import com.google.android.gms.ads.AdRequest
-import com.google.android.gms.ads.FullScreenContentCallback
-import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.rewarded.RewardedAd
-import com.google.android.gms.ads.rewarded.RewardedAdLoadCallback
+import com.google.android.libraries.ads.mobile.sdk.common.AdLoadCallback
+import com.google.android.libraries.ads.mobile.sdk.common.AdRequest
+import com.google.android.libraries.ads.mobile.sdk.common.AdValue
+import com.google.android.libraries.ads.mobile.sdk.common.FullScreenContentError
+import com.google.android.libraries.ads.mobile.sdk.common.LoadAdError
+import com.google.android.libraries.ads.mobile.sdk.rewarded.OnUserEarnedRewardListener
+import com.google.android.libraries.ads.mobile.sdk.rewarded.RewardItem
+import com.google.android.libraries.ads.mobile.sdk.rewarded.RewardedAd
+import com.google.android.libraries.ads.mobile.sdk.rewarded.RewardedAdEventCallback
 import java.util.concurrent.TimeUnit
 import kotlin.math.pow
 
@@ -28,7 +31,16 @@ object Reward {
     private var isLoadingReward = false
     private var retry = 0
 
+    private fun postOnMain(action: () -> Unit) {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            action()
+        } else {
+            Handler(Looper.getMainLooper()).post(action)
+        }
+    }
+
     fun rewardAdAlready(): Boolean = mRewardAd != null
+
     fun loadRewardAd(
         activity: Activity,
         rewardId: String = "",
@@ -36,11 +48,11 @@ object Reward {
     ) {
         if (rewardId == "" || mRewardAd != null || isLoadingReward) return
         if (!activity.isInternetConnected() || SPF(activity).is_app_pro) {
-            onResult?.invoke(false)
+            postOnMain { onResult?.invoke(false) }
             return
         }
         if (!ValueRemoteConfigModule.reward_ad) {
-            onResult?.invoke(false)
+            postOnMain { onResult?.invoke(false) }
             return
         }
 
@@ -50,16 +62,16 @@ object Reward {
             retry = 0
             return
         }
-        val adRequest = AdRequest.Builder().build()
+        val adRequest = AdRequest.Builder(rewardId).build()
         RewardedAd.load(
-            activity.applicationContext, rewardId, adRequest,
-            object : RewardedAdLoadCallback() {
+            adRequest,
+            object : AdLoadCallback<RewardedAd> {
                 override fun onAdLoaded(rewardedAd: RewardedAd) {
                     rewardedAd.setImmersiveMode(true)
                     mRewardAd = rewardedAd
                     retry = 0
                     isLoadingReward = false
-                    onResult?.invoke(true)
+                    postOnMain { onResult?.invoke(true) }
                 }
 
                 override fun onAdFailedToLoad(loadAdError: LoadAdError) {
@@ -68,9 +80,9 @@ object Reward {
                     val delayMillis = TimeUnit.SECONDS.toMillis(
                         2.0.pow(6.coerceAtMost(retry)).toLong()
                     )
-                    if (retry >= 3) onResult?.invoke(false)
+                    if (retry >= 3) postOnMain { onResult?.invoke(false) }
                     Handler(Looper.getMainLooper())
-                        .postDelayed({ loadRewardAd(activity, rewardId) }, delayMillis)
+                        .postDelayed({ loadRewardAd(activity, rewardId, onResult) }, delayMillis)
                 }
             })
     }
@@ -86,7 +98,7 @@ object Reward {
         fun runNext() {
             if (handled) return
             handled = true
-            nextAction.invoke()
+            postOnMain { nextAction.invoke() }
         }
 
         if (SPF(activity).is_app_pro) {
@@ -99,11 +111,10 @@ object Reward {
         }
         val rewardAd = mRewardAd
         if (rewardAd != null) {
-            rewardAd.fullScreenContentCallback = object : FullScreenContentCallback() {
+            rewardAd.adEventCallback = object : RewardedAdEventCallback {
                 override fun onAdDismissedFullScreenContent() {
-                    super.onAdDismissedFullScreenContent()
                     lastShowAdFull = System.currentTimeMillis()
-                    rewardAd.fullScreenContentCallback = null
+                    rewardAd.adEventCallback = null
                     mRewardAd = null
                     if (reload) loadRewardAd(activity, mRewardAdId)
                     runNext()
@@ -111,38 +122,38 @@ object Reward {
                 }
 
                 override fun onAdShowedFullScreenContent() {
-                    super.onAdShowedFullScreenContent()
-                    onShowSuccess?.invoke()
+                    postOnMain { onShowSuccess?.invoke() }
                     reward_ad_view.postFirebaseEvent()
                     StatusShowAd.isRewardAdsShown = true
                 }
 
-                override fun onAdFailedToShowFullScreenContent(p0: AdError) {
-                    super.onAdFailedToShowFullScreenContent(p0)
-                    rewardAd.fullScreenContentCallback = null
+                override fun onAdFailedToShowFullScreenContent(fullScreenContentError: FullScreenContentError) {
+                    rewardAd.adEventCallback = null
                     mRewardAd = null
                     runNext()
                     StatusShowAd.isRewardAdsShown = false
                 }
-            }
 
-            mRewardAd?.let {
-                trackingRevenueAd(it)
+                override fun onAdPaid(value: AdValue) {
+                    trackingRevenueAd(rewardAd, value)
+                }
             }
 
             if (!activity.isFinishing && StatusShowAd.canShowRewardAd()) {
                 try {
                     StatusShowAd.isRewardAdsShown = true
-                    rewardAd.show(activity) { rewardItem ->
-                        onUserEarnedReward?.invoke()
-                    }
+                    rewardAd.show(activity, object : OnUserEarnedRewardListener {
+                        override fun onUserEarnedReward(rewardItem: RewardItem) {
+                            postOnMain { onUserEarnedReward?.invoke() }
+                        }
+                    })
                 } catch (_: Exception) {
                     StatusShowAd.isRewardAdsShown = false
-                    rewardAd.fullScreenContentCallback = null
+                    rewardAd.adEventCallback = null
                     runNext()
                 }
             } else {
-                rewardAd.fullScreenContentCallback = null
+                rewardAd.adEventCallback = null
                 runNext()
             }
         } else {
@@ -168,22 +179,26 @@ object Reward {
         var loadingDialog: DialogLoadingAds? = null
 
         fun dismissLoading() {
-            DialogLoadingAds.dismissLoading(loadingDialog, activity)
-            loadingDialog = null
+            postOnMain {
+                DialogLoadingAds.dismissLoading(loadingDialog, activity)
+                loadingDialog = null
+            }
         }
 
         fun runNext() {
             if (handled) return
             handled = true
             dismissLoading()
-            nextAction.invoke()
+            postOnMain { nextAction.invoke() }
         }
 
-        onStartLoading?.invoke()
+        postOnMain { onStartLoading?.invoke() }
 
         if (SPF(activity).is_app_pro || !activity.isInternetConnected() || !ValueRemoteConfigModule.reward_ad || rewardId.isEmpty()) {
-            onFinishLoading?.invoke()
-            onLoadFailed?.invoke()
+            postOnMain {
+                onFinishLoading?.invoke()
+                onLoadFailed?.invoke()
+            }
             runNext()
             return
         }
@@ -191,7 +206,7 @@ object Reward {
         mRewardAdId = rewardId
 
         if (mRewardAd != null) {
-            onFinishLoading?.invoke()
+            postOnMain { onFinishLoading?.invoke() }
             showRewardAd(
                 activity = activity,
                 nextAction = { runNext() },
@@ -210,25 +225,25 @@ object Reward {
             Handler(Looper.getMainLooper()).postDelayed({
                 if (!handled && mRewardAd == null) {
                     dismissLoading()
-                    onFinishLoading?.invoke()
-                    onLoadFailed?.invoke()
+                    postOnMain {
+                        onFinishLoading?.invoke()
+                        onLoadFailed?.invoke()
+                    }
                     runNext()
                 }
             }, timeOut)
         }
 
-        val adRequest = AdRequest.Builder().build()
+        val adRequest = AdRequest.Builder(rewardId).build()
         RewardedAd.load(
-            activity.applicationContext,
-            rewardId,
             adRequest,
-            object : RewardedAdLoadCallback() {
+            object : AdLoadCallback<RewardedAd> {
                 override fun onAdLoaded(rewardedAd: RewardedAd) {
                     dismissLoading()
                     rewardedAd.setImmersiveMode(true)
                     mRewardAd = rewardedAd
                     retry = 0
-                    onFinishLoading?.invoke()
+                    postOnMain { onFinishLoading?.invoke() }
                     showRewardAd(
                         activity = activity,
                         nextAction = { runNext() },
@@ -242,8 +257,10 @@ object Reward {
                     dismissLoading()
                     retry++
                     mRewardAd = null
-                    onFinishLoading?.invoke()
-                    onLoadFailed?.invoke()
+                    postOnMain {
+                        onFinishLoading?.invoke()
+                        onLoadFailed?.invoke()
+                    }
                     runNext()
                 }
             }

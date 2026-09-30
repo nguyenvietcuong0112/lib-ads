@@ -17,7 +17,7 @@ import com.mobi.libraryads.ads.native_ads.NativeManager
 import com.mobi.libraryads.ads.native_ads.callback.INativeAdCallback
 import com.mobi.libraryads.commons.utils.AdsLog
 import com.mobi.libraryads.commons.utils.setGone
-import com.google.android.gms.ads.nativead.NativeAd
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd
 import java.util.concurrent.ConcurrentHashMap
 
 abstract class BaseListAdapter<T, VH : RecyclerView.ViewHolder> : ListAdapter<T, RecyclerView.ViewHolder> {

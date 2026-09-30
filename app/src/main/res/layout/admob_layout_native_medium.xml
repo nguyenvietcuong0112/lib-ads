@@ -17,7 +17,7 @@
     </com.facebook.shimmer.ShimmerFrameLayout>
 
     <!-- NATIVE AD VIEW: Hiện khi Load hoàn tất. (Mặc định GONE) -->
-    <com.google.android.gms.ads.nativead.NativeAdView
+    <com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView
         android:id="@+id/native_ad_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -103,7 +103,7 @@
                 app:constraint_referenced_ids="imvCardView,ad_body" />
 
             <!-- MediaView bắt buộc cho Native Ads -->
-            <com.google.android.gms.ads.nativead.MediaView
+            <com.google.android.libraries.ads.mobile.sdk.nativead.MediaView
                 android:id="@+id/media_view"
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
@@ -132,5 +132,5 @@
                 app:layout_constraintTop_toBottomOf="@+id/media_view" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
-    </com.google.android.gms.ads.nativead.NativeAdView>
+    </com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView>
 </FrameLayout>

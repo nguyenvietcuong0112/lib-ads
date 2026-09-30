@@ -3,8 +3,8 @@ package com.mobi.libraryads.ads.native_ads.renderer
 import android.os.Bundle
 import com.mobi.libraryads.commons.firebasetracking.FirebaseTracking.postFirebaseEvent
 import com.mobi.libraryads.commons.utils.AdsLog
-import com.google.android.gms.ads.nativead.NativeAd
-import com.google.android.gms.ads.nativead.NativeAdView
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAd
+import com.google.android.libraries.ads.mobile.sdk.nativead.NativeAdView
 
 class MetaNativeViewBinder : INativeViewBinder {
     private val TAG = "MetaNativeViewBinder"
@@ -20,7 +20,7 @@ class MetaNativeViewBinder : INativeViewBinder {
 
         // Additional Meta-specific log tracking
         try {
-            val adapterClass = ad.responseInfo?.mediationAdapterClassName ?: ""
+            val adapterClass = ad.getResponseInfo().adapterClassName ?: ""
             val bundle = Bundle().apply {
                 putString("ad_network", "meta")
                 putString("adapter_class", adapterClass)
